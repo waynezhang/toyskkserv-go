@@ -1,0 +1,34 @@
+DictionaryDirectory: ./.dict
+CacheDirectory: ./.cache
+ListenAddr: 127.0.0.1:1179
+
+# daily, weekly, monthly, (debug)
+UpdateSchedule: monthly
+
+Dictionaries:
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.L # 基本辞書
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.jinmei # 人名、特に日本人の姓名
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.geo # 日本郵便株式会社データ
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.propernoun # 芸能・音楽・企業・アニメなど
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.station # 駅名・路線名・鉄道会社名およびその他の鉄道用語の専門辞書
+  # プラス
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.fullname # 人名録。姓と名に分離したものは SKK-JISYO.jinmei に
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.law # 法律用語電子化辞書
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.okinawa # 沖縄辞書
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.china_taiwan # 中国、台湾の地名
+  # 特殊変換
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.assoc # 見出し語と候補との間に一定の連想関係があるエントリ。大量の略語を含んでいる。
+  # 特殊
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.JIS2 # JIS 第二水準の文字
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.JIS3_4 # JIS 第三、第四水準の文字
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.JIS2004 # JIS X 0213 の 2004 年改正で追加された「表外漢字 UCS 互換」10 文字
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.itaiji # 異体字変換
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.itaiji.JIS3_4 # itaiji の JIS 第３・第４水準版
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.mazegaki # 交ぜ書き
+  # 編纂
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.wrong.annotated # 間違えて含まれていたエントリ
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.edict # abbrev
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/zipcode/SKK-JISYO.zipcode
+  - https://github.com/skk-dev/dict/raw/refs/heads/master/zipcode/SKK-JISYO.office.zipcode
+  # その他
+  - https://github.com/uasi/skk-emoji-jisyo/raw/refs/heads/master/SKK-JISYO.emoji.utf8 # emoji
