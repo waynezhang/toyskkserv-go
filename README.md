@@ -1,6 +1,6 @@
 # tskks
 
-A toy SKK server. Just made this for fun.
+A toy SKK skkseev. Just made this for fun.
 
 - Configurable dictionary urls
 - Automatically dictionary update
