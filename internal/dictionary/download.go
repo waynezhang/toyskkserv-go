@@ -5,13 +5,13 @@ import (
 	"errors"
 	"log/slog"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	getter "github.com/hashicorp/go-getter"
 	cp "github.com/otiai10/copy"
+	"github.com/waynezhang/tskks/internal/iconv"
 	"github.com/waynezhang/tskks/internal/utils"
 )
 
@@ -75,46 +75,40 @@ func updateUTF8Dictionary(src string, dst string) error {
 }
 
 func convertEncoding(src string, dst string) error {
-	// TODO: only on macOS
-	f, err := os.Create(dst)
+	slog.Info("Convert encoding", "src", src, "dst", dst)
+	src_f, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer src_f.Close()
 
-	f.WriteString(";; -*- mode: fundamental; coding: utf-8 -*-\n")
-
-	brewPrefix := os.Getenv("HOMEBREW_PREFIX")
-	cmd := exec.Command(brewPrefix+"/opt/libiconv/bin/iconv", "-f", ENCODING_EUCJP, "-t", ENCODING_UTF8, src)
-
-	pipe, err := cmd.StdoutPipe()
+	dst_f, err := os.OpenFile(dst, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
+	defer dst_f.Close()
 
-	done := make(chan struct{})
-	s := bufio.NewScanner(pipe)
+	iv, err := iconv.Open(src, "euc-jis-2004", "utf-8")
+	if err != nil {
+		return err
+	}
+	defer iv.Close()
 
-	go func() {
-		for s.Scan() {
-			line := s.Text()
-			if strings.HasPrefix(line, dictEncodingPrefix) {
-				continue
-			}
-			f.WriteString(line + "\n")
+	w := bufio.NewWriter(dst_f)
+	w.WriteString(";; -*- mode: fundamental; coding: utf-8 -*-\n")
+
+	s := bufio.NewScanner(src_f)
+	for s.Scan() {
+		line := iv.Convert(s.Text())
+		if strings.HasPrefix(line, dictEncodingPrefix) {
+			continue
 		}
-
-		done <- struct{}{}
-	}()
-
-	err = cmd.Start()
-	if err != nil {
-		return err
+		w.WriteString(line)
+		w.WriteString("\n")
 	}
+	w.Flush()
 
-	<-done
-
-	return cmd.Wait()
+	return nil
 }
 
 func encodingOfDict(path string) (encoding, error) {
