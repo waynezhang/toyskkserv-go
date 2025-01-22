@@ -13,6 +13,7 @@ type Config struct {
 	DictionaryDirectory     string
 	CacheDirectory          string
 	ListenAddr              string
+	FallbackToGoogle        bool
 	UpdateSchedule          string
 	onConfigChangeCallbacks []func()
 }

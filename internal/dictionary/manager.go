@@ -7,12 +7,14 @@ import (
 	"sync"
 
 	"github.com/waynezhang/tskks/internal/config"
+	"github.com/waynezhang/tskks/internal/googleapi"
 	"github.com/waynezhang/tskks/internal/utils"
 )
 
 type DictManager struct {
-	Directory string
-	cm        *CandidatesManager
+	directory        string
+	cm               *CandidatesManager
+	fallbackToGoogle bool
 }
 
 var (
@@ -24,8 +26,9 @@ func Shared() *DictManager {
 	once.Do(func() {
 		cfg := config.Shared()
 		instance = &DictManager{
-			cm:        newCandidatesManager(),
-			Directory: cfg.DictionaryDirectory,
+			cm:               newCandidatesManager(),
+			directory:        cfg.DictionaryDirectory,
+			fallbackToGoogle: cfg.FallbackToGoogle,
 		}
 		instance.loadAll(cfg)
 	})
@@ -41,9 +44,16 @@ func (dm *DictManager) HandleRequest(req string) string {
 
 	if len(candidates) > 0 {
 		return "1" + candidates + "/"
-	} else {
-		return "4/" + key + " "
 	}
+
+	if dm.fallbackToGoogle {
+		candidates = googleapi.TransliterateRequest(key)
+		if len(candidates) > 0 {
+			return "1" + candidates + "/"
+		}
+	}
+
+	return "4/" + key + " "
 }
 
 func (dm *DictManager) DictionariesDidChange() {

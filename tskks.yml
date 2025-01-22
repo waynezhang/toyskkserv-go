@@ -1,6 +1,7 @@
 DictionaryDirectory: ./.dict
 CacheDirectory: ./.cache
 ListenAddr: 127.0.0.1:1179
+FallbackToGoogle: true
 
 # daily, weekly, monthly, debug, disabled
 UpdateSchedule: monthly
