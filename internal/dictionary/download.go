@@ -98,8 +98,14 @@ func convertEncoding(src string, dst string) error {
 	w.WriteString(";; -*- mode: fundamental; coding: utf-8 -*-\n")
 
 	s := bufio.NewScanner(src_f)
+	idx := 0
 	for s.Scan() {
-		line := iv.Convert(s.Text())
+		idx++
+		line, err := iv.Convert(s.Text())
+		if err != nil {
+			slog.Error("Failed to convert line", "no", idx, "text", line)
+			continue
+		}
 		if strings.HasPrefix(line, dictEncodingPrefix) {
 			continue
 		}
@@ -112,6 +118,10 @@ func convertEncoding(src string, dst string) error {
 }
 
 func encodingOfDict(path string) (encoding, error) {
+	if strings.HasSuffix(dictName(path), ".utf8") {
+		return ENCODING_UTF8, nil
+	}
+
 	f, err := os.Open(path)
 	if err != nil {
 		return "", err
