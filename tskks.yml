@@ -2,7 +2,7 @@ DictionaryDirectory: ./.dict
 CacheDirectory: ./.cache
 ListenAddr: 127.0.0.1:1179
 
-# daily, weekly, monthly, (debug)
+# daily, weekly, monthly, debug, disabled
 UpdateSchedule: monthly
 
 Dictionaries:

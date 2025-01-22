@@ -146,7 +146,8 @@ func (s *Server) startUpdateWatcher(cfg *config.Config) {
 		"debug":  "* * * * *",
 	}[cfg.UpdateSchedule]
 	if cron == "" {
-		cron = "0 0 * * 1" // weekly
+		slog.Info("Update schedule is disabled", "schedule", cfg.UpdateSchedule)
+		return
 	}
 	slog.Info("Update schedule", "cron", cron)
 
