@@ -99,7 +99,8 @@ func handleRequest(c net.Conn) {
 			// The primary encoding set of SKK is ASCII + euc-jp (note: UTF-8 can also be used in some implementations)
 			slog.Info("Req type: request")
 			res := dictionary.Shared().HandleRequest(req)
-			slog.Info("Respnse", "res", "["+res+"]")
+
+			slog.Info("Response", "res", "["+res+"]")
 			c.Write([]byte(res + "\n"))
 			break
 
@@ -123,6 +124,16 @@ func handleRequest(c net.Conn) {
 			c.Write([]byte("\n"))
 			break
 
+		case '4':
+			// CLIENT_COMPLETION
+			// Request to server: 4 + dictionary_key + space + LF
+			// Same as CLIENT_REQUEST
+			slog.Info("Req type: completion")
+			res := dictionary.Shared().HandleCompletion(req)
+
+			slog.Info("Response", "res", "["+res+"]")
+			c.Write([]byte(res + "\n"))
+			break
 		default:
 			slog.Error("Invalid request")
 			break

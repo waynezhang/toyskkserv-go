@@ -56,6 +56,20 @@ func (dm *DictManager) HandleRequest(req string) string {
 	return "4/" + key + " "
 }
 
+func (dm *DictManager) HandleCompletion(req string) string {
+	slog.Info("Start finding completions")
+	defer slog.Info("Finished finding completions")
+
+	key := strings.TrimSuffix(strings.TrimPrefix(req, "4"), " ")
+	candidates := dm.cm.findCompletions(key)
+
+	if len(candidates) > 0 {
+		return "1" + candidates + "/"
+	}
+
+	return "4/" + key + " "
+}
+
 func (dm *DictManager) DictionariesDidChange() {
 	dm.reloadDicts()
 }

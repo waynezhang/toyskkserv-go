@@ -2,6 +2,7 @@ package dictionary
 
 import (
 	"log/slog"
+	"strings"
 
 	"github.com/tidwall/btree"
 )
@@ -23,6 +24,20 @@ func (cm *CandidatesManager) findCandidates(key string) string {
 	slog.Info("Find candidates", "key", "["+key+"]")
 	c, _ := cm.candidates.Get(key)
 	return c
+}
+
+func (cm *CandidatesManager) findCompletions(key string) string {
+	slog.Info("Find completions", "key", "["+key+"]")
+
+	cdd := ""
+	cm.candidates.Ascend(key, func(k string, v string) bool {
+		if !strings.HasPrefix(k, key) {
+			return false
+		}
+		cdd += "/" + k
+		return true
+	})
+	return cdd
 }
 
 func (cm *CandidatesManager) clear() {
