@@ -33,3 +33,4 @@ Dictionaries:
   - https://github.com/skk-dev/dict/raw/refs/heads/master/zipcode/SKK-JISYO.office.zipcode
   # その他
   - https://github.com/uasi/skk-emoji-jisyo/raw/refs/heads/master/SKK-JISYO.emoji.utf8 # emoji
+  - https://github.com/arrow2nd/skk-jisyo-emoji-ja/raw/refs/heads/main/skk-jisyo-emoji-ja.utf8 # emoji-ja
