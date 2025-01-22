@@ -9,6 +9,7 @@ import (
 	"github.com/go-co-op/gocron/v2"
 	"github.com/waynezhang/tskks/internal/config"
 	"github.com/waynezhang/tskks/internal/dictionary"
+	ver "github.com/waynezhang/tskks/internal/version"
 	"golang.org/x/text/encoding/japanese"
 )
 
@@ -111,7 +112,7 @@ func handleRequest(c net.Conn) {
 			// Note: no known client parses this string
 			// Implementation on dbskkd-cdb: returns the version string
 			slog.Info("Req type: version")
-			c.Write([]byte("tskks"))
+			c.Write([]byte(ver.VersionString()))
 			break
 
 		case '3':
@@ -121,7 +122,7 @@ func handleRequest(c net.Conn) {
 			// Note: no known client parses this string
 			// Implementation on dbskkd-cdb: returns dummy string novalue:
 			slog.Info("Req type: host")
-			c.Write([]byte("\n"))
+			c.Write([]byte(config.Shared().ListenAddr))
 			break
 
 		case '4':

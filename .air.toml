@@ -1,11 +1,10 @@
 root = "."
 testdata_dir = "testdata"
-tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "./tmp/tskks -v serve"
-  cmd = "go build -o ./tmp/tskks ."
+  bin = "./bin/tskks -v serve"
+  cmd = "make"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
