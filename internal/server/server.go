@@ -58,7 +58,8 @@ func handleRequest(c net.Conn) {
 	r := bufio.NewReader(c)
 	decoder := japanese.EUCJP.NewDecoder()
 
-	for {
+	running := true
+	for running {
 		line, err := r.ReadString('\n')
 		if err != nil {
 			slog.Error("Failed to read from connection", "err", err)
@@ -73,6 +74,10 @@ func handleRequest(c net.Conn) {
 		}
 
 		req := strings.TrimSuffix(decoded, "\n")
+		if len(req) == 0 {
+			slog.Error("Empty reqeust")
+			continue
+		}
 		slog.Info("Req received", "req", "["+req+"]", "cmd", req[0])
 
 		switch req[0] {
@@ -81,6 +86,7 @@ func handleRequest(c net.Conn) {
 			// Request to server: 0 + space + LF
 			// Server terminates and disconnects after receiving the request
 			slog.Info("Req type: disconnect")
+			running = false
 			break
 
 		case '1':
