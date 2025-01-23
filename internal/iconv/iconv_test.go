@@ -9,7 +9,7 @@ import (
 )
 
 func TestIconv(t *testing.T) {
-	iv, err := open("euc-jis-2004", "utf-8")
+	iv, err := open(ENCODING_EUCJP, ENCODING_UTF8)
 
 	assert.Nil(t, err)
 	defer iv.close()
