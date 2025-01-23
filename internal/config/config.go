@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
@@ -39,6 +40,12 @@ func Shared() *Config {
 		if err != nil {
 			slog.Error("Failed to unmarshal config", "err", err)
 			panic(err)
+		}
+		dir, err := homedir.Expand(instance.DictionaryDirectory)
+		if err == nil {
+			instance.DictionaryDirectory = dir
+		} else {
+			slog.Error("Failed to expand home dir", "err", err)
 		}
 
 		instance.onConfigChangeCallbacks = []func(){}
