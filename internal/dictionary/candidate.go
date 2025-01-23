@@ -7,26 +7,30 @@ import (
 	"github.com/tidwall/btree"
 )
 
-type CandidatesManager struct {
+type candidatesManager struct {
 	candidates btree.Map[string, string]
 }
 
-func newCandidatesManager() *CandidatesManager {
-	return &CandidatesManager{}
+func newCandidatesManager() *candidatesManager {
+	return &candidatesManager{}
 }
 
-func (cm *CandidatesManager) addCandidates(key string, candidates string) {
+func (cm *candidatesManager) addCandidates(key string, candidates string) {
 	old, _ := cm.candidates.Get(key)
-	cm.candidates.Set(key, old+candidates)
+	if len(old) == 0 {
+		cm.candidates.Set(key, candidates)
+	} else {
+		cm.candidates.Set(key, old+candidates[1:])
+	}
 }
 
-func (cm *CandidatesManager) findCandidates(key string) string {
+func (cm *candidatesManager) findCandidates(key string) string {
 	slog.Info("Find candidates", "key", "["+key+"]")
 	c, _ := cm.candidates.Get(key)
 	return c
 }
 
-func (cm *CandidatesManager) findCompletions(key string) string {
+func (cm *candidatesManager) findCompletions(key string) string {
 	slog.Info("Find completions", "key", "["+key+"]")
 
 	cdd := ""
@@ -34,12 +38,15 @@ func (cm *CandidatesManager) findCompletions(key string) string {
 		if !strings.HasPrefix(k, key) {
 			return false
 		}
-		cdd += "/" + k
+		cdd += k + "/"
 		return true
 	})
+	if len(cdd) > 0 {
+		cdd = "/" + cdd
+	}
 	return cdd
 }
 
-func (cm *CandidatesManager) clear() {
+func (cm *candidatesManager) clear() {
 	cm.candidates.Clear()
 }

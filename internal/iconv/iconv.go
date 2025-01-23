@@ -13,14 +13,32 @@ package iconv
 // }
 import "C"
 import (
+	"log/slog"
 	"unsafe"
+)
+
+type Encoding string
+
+const (
+	ENCODING_UNDECIDED = "undecided"
+	ENCODING_UTF8      = "utf-8"
+	ENCODING_EUCJP     = "euc-jisx0213"
 )
 
 type Iconv struct {
 	handle C.iconv_t
 }
 
-func Open(file string, from string, to string) (*Iconv, error) {
+var EUCJPConverter = func() *Iconv {
+	iv, err := open(ENCODING_EUCJP, ENCODING_UTF8)
+	if err != nil {
+		slog.Error("Failed to open iconv", "err", err)
+	}
+
+	return iv
+}()
+
+func open(from string, to string) (*Iconv, error) {
 	fromcode := C.CString(from)
 	defer C.free(unsafe.Pointer(fromcode))
 
@@ -35,7 +53,11 @@ func Open(file string, from string, to string) (*Iconv, error) {
 	return &Iconv{handle: ret}, nil
 }
 
-func (iv *Iconv) Convert(s string) (string, error) {
+func (iv *Iconv) ConvertLine(s string) (string, error) {
+	if len(s) == 0 {
+		return "", nil
+	}
+
 	buff := [4096]byte{}
 	outptr := &buff[0]
 	outlen := C.size_t(len(buff))
@@ -53,6 +75,6 @@ func (iv *Iconv) Convert(s string) (string, error) {
 	return string(buff[:len(buff)-int(outlen)]), err
 }
 
-func (iv *Iconv) Close() {
+func (iv *Iconv) close() {
 	C.iconv_close(iv.handle)
 }

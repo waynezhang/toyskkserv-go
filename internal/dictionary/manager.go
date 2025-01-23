@@ -7,13 +7,13 @@ import (
 	"sync"
 
 	"github.com/waynezhang/tskks/internal/config"
+	"github.com/waynezhang/tskks/internal/files"
 	"github.com/waynezhang/tskks/internal/googleapi"
-	"github.com/waynezhang/tskks/internal/utils"
 )
 
 type DictManager struct {
+	cm               *candidatesManager
 	directory        string
-	cm               *CandidatesManager
 	fallbackToGoogle bool
 }
 
@@ -25,14 +25,21 @@ var (
 func Shared() *DictManager {
 	once.Do(func() {
 		cfg := config.Shared()
-		instance = &DictManager{
-			cm:               newCandidatesManager(),
-			directory:        cfg.DictionaryDirectory,
-			fallbackToGoogle: cfg.FallbackToGoogle,
-		}
-		instance.loadAll(cfg)
+
+		dm := NewDictManager(cfg.DictionaryDirectory, cfg.FallbackToGoogle)
+		dm.reloadDicts(cfg.Dictionaries)
+
+		instance = dm
 	})
 	return instance
+}
+
+func NewDictManager(directory string, fallbackToGoogle bool) *DictManager {
+	return &DictManager{
+		cm:               newCandidatesManager(),
+		directory:        directory,
+		fallbackToGoogle: fallbackToGoogle,
+	}
 }
 
 func (dm *DictManager) HandleRequest(req string) string {
@@ -43,7 +50,7 @@ func (dm *DictManager) HandleRequest(req string) string {
 	candidates := dm.cm.findCandidates(key)
 
 	if len(candidates) > 0 {
-		return "1" + candidates + "/"
+		return "1" + candidates
 	}
 
 	if dm.fallbackToGoogle {
@@ -64,32 +71,51 @@ func (dm *DictManager) HandleCompletion(req string) string {
 	candidates := dm.cm.findCompletions(key)
 
 	if len(candidates) > 0 {
-		return "1" + candidates + "/"
+		return "1" + candidates
 	}
 
 	return "4/" + key + " "
 }
 
-func (dm *DictManager) DictionariesDidChange() {
-	dm.reloadDicts()
+func (dm *DictManager) DictionariesDidChange(urls []string) {
+	slog.Info("Dictionaries did change")
+	dm.reloadDicts(urls)
 }
 
-func (dm *DictManager) loadAll(cfg *config.Config) {
+func (dm *DictManager) downloadDictionaries(urls []string) {
 	slog.Info("Start loading dictionaries")
 
-	for _, url := range cfg.Dictionaries {
-		dictPath := filepath.Join(cfg.DictionaryDirectory, dictName(url))
-		if !utils.IsFileExisting(dictPath) {
-			slog.Warn("Dictionary not found", "path", dictPath)
-			DownloadDictionary(url, cfg.DictionaryDirectory, cfg.CacheDirectory)
+	for _, url := range urls {
+		path := filepath.Join(dm.directory, dictName(url))
+		if files.IsFileExisting(path) {
+			continue
 		}
-		loadDict(dictPath, dm.cm)
+		slog.Warn("Dictionary not found", "path", path)
+		files.Download(url, path)
 	}
 
 	slog.Info("All dictionaries loaded")
 }
 
-func (dm *DictManager) reloadDicts() {
+func (dm *DictManager) loadDictionaries(paths []string) {
+	for _, path := range paths {
+		loadDict(path, dm.cm)
+	}
+}
+
+func (dm *DictManager) reloadDicts(urls []string) {
 	dm.cm.candidates.Clear()
-	dm.loadAll(config.Shared())
+
+	dm.downloadDictionaries(urls)
+	dm.loadDictionaries(dictionaryPaths(urls, dm.directory))
+}
+
+func dictionaryPaths(urls []string, directory string) []string {
+	paths := []string{}
+	for _, u := range urls {
+		p := filepath.Join(directory, dictName(u))
+		paths = append(paths, p)
+	}
+
+	return paths
 }

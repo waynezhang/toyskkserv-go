@@ -11,7 +11,6 @@ import (
 type Config struct {
 	Dictionaries            []string
 	DictionaryDirectory     string
-	CacheDirectory          string
 	ListenAddr              string
 	FallbackToGoogle        bool
 	UpdateSchedule          string
@@ -23,7 +22,6 @@ var (
 	once     sync.Once
 )
 
-// GetInstance provides access to the singleton instance
 func Shared() *Config {
 	once.Do(func() {
 		viper.SetConfigName("tskks")

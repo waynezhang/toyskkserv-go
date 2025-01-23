@@ -4,7 +4,7 @@ BINARY=tskks
 VERSION=`git for-each-ref --sort=creatordate --format '%(refname)' refs/tags | tail -n 1 | sed 's/refs\/tags\/v\(.*\)/\1/g'`
 BUILD_TIME=`date +%Y%m%d%H%M`
 
-LDFLAGS=-ldflags "-X github.com/waynezhang/tskks/internal/version.Version=${VERSION} -X github.com/waynezhang/tskks/internal/version.Revision=${BUILD_TIME}"
+LDFLAGS=-ldflags "-X github.com/waynezhang/tskks/internal/defs.Version=${VERSION} -X github.com/waynezhang/tskks/internal/defs.Revision=${BUILD_TIME}"
 
 all: build
 

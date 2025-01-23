@@ -1,4 +1,4 @@
-package ver
+package defs
 
 import "fmt"
 

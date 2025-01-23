@@ -6,30 +6,29 @@ import (
 	"net"
 	"strings"
 
-	"github.com/go-co-op/gocron/v2"
 	"github.com/waynezhang/tskks/internal/config"
+	"github.com/waynezhang/tskks/internal/defs"
 	"github.com/waynezhang/tskks/internal/dictionary"
-	ver "github.com/waynezhang/tskks/internal/version"
-	"golang.org/x/text/encoding/japanese"
+	"github.com/waynezhang/tskks/internal/iconv"
 )
 
 type Server struct {
-	listener    net.Listener
+	listenAddr  string
 	dictManager *dictionary.DictManager
+	listener    net.Listener
 }
 
-func New() *Server {
-	return &Server{}
+func New(addr string, dm *dictionary.DictManager) *Server {
+	return &Server{
+		listenAddr:  addr,
+		dictManager: dm,
+	}
 }
 
 func (s *Server) Start() {
-	cfg := config.Shared()
-	s.initializeDictionaries(cfg)
-	s.startUpdateWatcher(cfg)
-
-	addr, err := net.ResolveTCPAddr("tcp", cfg.ListenAddr)
+	addr, err := net.ResolveTCPAddr("tcp", s.listenAddr)
 	if err != nil {
-		slog.Error("Failed to resolve addr", "addr", cfg.ListenAddr)
+		slog.Error("Failed to resolve addr", "addr", s.listenAddr)
 		panic(err)
 	}
 
@@ -49,130 +48,116 @@ func (s *Server) Start() {
 			continue
 		}
 
-		go handleRequest(conn)
+		go s.handleConnection(conn)
 	}
 }
 
-func handleRequest(c net.Conn) {
+func (s *Server) handleConnection(c net.Conn) {
 	defer c.Close()
 
 	r := bufio.NewReader(c)
-	decoder := japanese.EUCJP.NewDecoder()
 
 	running := true
 	for running {
 		line, err := r.ReadString('\n')
 		if err != nil {
-			slog.Error("Failed to read from connection", "err", err)
+			slog.Info("Connect lost", "err", err)
 			return
 		}
 
-		decoded, err := decoder.String(line)
-		if err != nil {
-			slog.Error("Failed to decode string", "req", line)
-			c.Write([]byte("\n"))
-			continue
-		}
+		resp, r := s.handleRequest(line)
+		c.Write([]byte(resp))
 
-		req := strings.TrimSuffix(decoded, "\n")
-		if len(req) == 0 {
-			slog.Error("Empty reqeust")
-			continue
-		}
-		slog.Info("Req received", "req", "["+req+"]", "cmd", req[0])
-
-		switch req[0] {
-		case '0':
-			// CLIENT_END
-			// Request to server: 0 + space + LF
-			// Server terminates and disconnects after receiving the request
-			slog.Info("Req type: disconnect")
-			running = false
-			break
-
-		case '1':
-			// CLIENT_REQUEST
-			// Request to server: 1 + dictionary_key + space + LF
-			// Answer if found: 1 + (/ + candidate) * (number of candidates) + / + LF
-			// Answer if not found: 4 + dictionary_key + space + LF
-			// The dictionary keys and candidates are all variable-length strings
-			// The dictionary keys and candidates have the same character encoding
-			// The primary encoding set of SKK is ASCII + euc-jp (note: UTF-8 can also be used in some implementations)
-			slog.Info("Req type: request")
-			res := dictionary.Shared().HandleRequest(req)
-
-			slog.Info("Response", "res", "["+res+"]")
-			c.Write([]byte(res + "\n"))
-			break
-
-		case '2':
-			// CLIENT_VERSION
-			// Request to server: 2 + space + LF
-			// Answer: string including server version + space, e.g., dbskkd-cdb-2.00
-			// Note: no known client parses this string
-			// Implementation on dbskkd-cdb: returns the version string
-			slog.Info("Req type: version")
-			c.Write([]byte(ver.VersionString()))
-			break
-
-		case '3':
-			// CLIENT_HOST
-			// Request to server: 3 + space + LF
-			// Answer: string including host information + space, e.g., localhost:127.0.0.1:
-			// Note: no known client parses this string
-			// Implementation on dbskkd-cdb: returns dummy string novalue:
-			slog.Info("Req type: host")
-			c.Write([]byte(config.Shared().ListenAddr))
-			break
-
-		case '4':
-			// CLIENT_COMPLETION
-			// Request to server: 4 + dictionary_key + space + LF
-			// Same as CLIENT_REQUEST
-			slog.Info("Req type: completion")
-			res := dictionary.Shared().HandleCompletion(req)
-
-			slog.Info("Response", "res", "["+res+"]")
-			c.Write([]byte(res + "\n"))
-			break
-		default:
-			slog.Error("Invalid request")
-			break
-		}
+		running = r
 	}
 }
 
-func (s *Server) initializeDictionaries(cfg *config.Config) {
-	s.dictManager = dictionary.Shared()
-
-	cfg.OnConfigChange(func() {
-		s.dictManager.DictionariesDidChange()
-	})
-}
-
-func (s *Server) startUpdateWatcher(cfg *config.Config) {
-	cron := map[string]string{
-		"daily":  "0 0 * * *",
-		"weekly": "0 0 * * 1",
-		"montly": "0 0 1 * *",
-		"debug":  "* * * * *",
-	}[cfg.UpdateSchedule]
-	if cron == "" {
-		slog.Info("Update schedule is disabled", "schedule", cfg.UpdateSchedule)
-		return
-	}
-	slog.Info("Update schedule", "cron", cron)
-
-	sh, err := gocron.NewScheduler()
+func (s *Server) handleRequest(req string) (resp string, running bool) {
+	decoded, err := iconv.EUCJPConverter.ConvertLine(req)
 	if err != nil {
-		slog.Error("Failed to start update watcher", "err", err)
-		return
+		slog.Error("Failed to decode string", "req", req)
+		return "", true
 	}
 
-	job := gocron.CronJob(cron, false)
-	sh.NewJob(job, gocron.NewTask(func() {
-		slog.Info("Checking updates")
-		dictionary.UpdateDictionaries(cfg.Dictionaries, cfg.DictionaryDirectory, cfg.CacheDirectory)
-	}))
-	sh.Start()
+	req = strings.TrimSuffix(decoded, "\n")
+	if len(req) == 0 {
+		slog.Error("Empty reqeust")
+		return "", true
+	}
+	slog.Info("Req received", "req", "["+req+"]", "cmd", req[0])
+
+	switch req[0] {
+	case defs.PROTOCOL_DISCONNECT:
+		// CLIENT_END
+		// Request to server: 0 + space + LF
+		// Server terminates and disconnects after receiving the request
+		slog.Info("Req type: disconnect")
+		return "", false
+
+	case defs.PROTOCOL_REQUEST:
+		// CLIENT_REQUEST
+		// Request to server: 1 + dictionary_key + space + LF
+		// Answer if found: 1 + (/ + candidate) * (number of candidates) + / + LF
+		// Answer if not found: 4 + dictionary_key + space + LF
+		// The dictionary keys and candidates are all variable-length strings
+		// The dictionary keys and candidates have the same character encoding
+		// The primary encoding set of SKK is ASCII + euc-jp (note: UTF-8 can also be used in some implementations)
+		slog.Info("Req type: request")
+		res := s.dictManager.HandleRequest(req)
+
+		slog.Info("Response", "res", "["+res+"]")
+		return res + "\n", true
+
+	case defs.PROTOCOL_VER:
+		// CLIENT_VERSION
+		// Request to server: 2 + space + LF
+		// Answer: string including server version + space, e.g., dbskkd-cdb-2.00
+		// Note: no known client parses this string
+		// Implementation on dbskkd-cdb: returns the version string
+		slog.Info("Req type: version")
+		return defs.VersionString() + " \n", true
+
+	case defs.PROTOCOL_HOST:
+		// CLIENT_HOST
+		// Request to server: 3 + space + LF
+		// Answer: string including host information + space, e.g., localhost:127.0.0.1:
+		// Note: no known client parses this string
+		// Implementation on dbskkd-cdb: returns dummy string novalue:
+		slog.Info("Req type: host")
+		return s.listenAddr + " \n", true
+
+	case defs.PROTOCOL_COMPLETION:
+		// CLIENT_COMPLETION
+		// Request to server: 4 + dictionary_key + space + LF
+		// Same as CLIENT_REQUEST
+		slog.Info("Req type: completion")
+		res := s.dictManager.HandleCompletion(req)
+
+		slog.Info("Response", "res", "["+res+"]")
+		return res + "\n", true
+
+	case 'c':
+		// customized protocol
+		slog.Info("Req type: customize command")
+		return "", s.handleCustomizeCommand(req)
+
+	default:
+		slog.Error("Invalid request")
+		return "", true
+	}
+}
+
+func (s *Server) handleCustomizeCommand(req string) bool {
+	key := strings.TrimSuffix(
+		strings.TrimPrefix(req, string(defs.CUSTOMIZE_PROTOCOL)),
+		" ",
+	)
+	switch key {
+	case defs.CUSTOMIZE_PROTOCOL_RELOAD:
+		urls := config.Shared().Dictionaries
+		s.dictManager.DictionariesDidChange(urls)
+		break
+	}
+
+	return true
 }

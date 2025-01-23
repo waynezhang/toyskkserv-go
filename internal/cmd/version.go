@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	ver "github.com/waynezhang/tskks/internal/version"
+	"github.com/waynezhang/tskks/internal/defs"
 )
 
 func init() {
@@ -15,6 +15,6 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(ver.VersionString())
+		fmt.Println(defs.VersionString())
 	},
 }
