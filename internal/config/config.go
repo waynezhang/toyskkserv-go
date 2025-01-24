@@ -26,8 +26,8 @@ var (
 func Shared() *Config {
 	once.Do(func() {
 		viper.SetConfigName("tskks")
-		viper.AddConfigPath("$HOME/.config")
 		viper.AddConfigPath(".")
+		viper.AddConfigPath("$HOME/.config")
 
 		err := viper.ReadInConfig()
 		if err != nil {
