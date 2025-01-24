@@ -82,11 +82,23 @@ func (dm *DictManager) DictionariesDidChange(urls []string) {
 	dm.reloadDicts(urls)
 }
 
+func (dm *DictManager) reloadDicts(urls []string) {
+	dm.cm.candidates.Clear()
+
+	dm.downloadDictionaries(urls)
+	dm.loadFiles(files.DictionaryPaths(urls, dm.directory))
+}
+
 func (dm *DictManager) downloadDictionaries(urls []string) {
 	slog.Info("Start loading dictionaries")
 
 	for _, url := range urls {
-		path := filepath.Join(dm.directory, dictName(url))
+		if files.IsFileExisting(url) {
+			slog.Debug("Skip local file", "url", url)
+			continue
+		}
+
+		path := filepath.Join(dm.directory, files.DictName(url))
 		if files.IsFileExisting(path) {
 			continue
 		}
@@ -97,25 +109,8 @@ func (dm *DictManager) downloadDictionaries(urls []string) {
 	slog.Info("All dictionaries loaded")
 }
 
-func (dm *DictManager) loadDictionaries(paths []string) {
+func (dm *DictManager) loadFiles(paths []string) {
 	for _, path := range paths {
-		loadDict(path, dm.cm)
+		loadFile(path, dm.cm)
 	}
-}
-
-func (dm *DictManager) reloadDicts(urls []string) {
-	dm.cm.candidates.Clear()
-
-	dm.downloadDictionaries(urls)
-	dm.loadDictionaries(dictionaryPaths(urls, dm.directory))
-}
-
-func dictionaryPaths(urls []string, directory string) []string {
-	paths := []string{}
-	for _, u := range urls {
-		p := filepath.Join(directory, dictName(u))
-		paths = append(paths, p)
-	}
-
-	return paths
 }

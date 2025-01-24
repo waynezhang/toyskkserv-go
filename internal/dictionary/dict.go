@@ -4,14 +4,13 @@ import (
 	"bufio"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/waynezhang/tskks/internal/iconv"
 )
 
-func loadDict(path string, cm *candidatesManager) {
+func loadFile(path string, cm *candidatesManager) {
 	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		slog.Error("Failed to open file", "file", path, "err", err)
@@ -78,8 +77,4 @@ func parseLine(str string, cm *candidatesManager) {
 	key := string(str[:keyEnd])
 	candidates := string(str[keyEnd+1:]) // /val1/
 	cm.addCandidates(key, candidates)
-}
-
-func dictName(url string) string {
-	return filepath.Base(url)
 }

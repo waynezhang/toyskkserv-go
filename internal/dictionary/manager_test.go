@@ -67,9 +67,32 @@ func TestLoadAll(t *testing.T) {
 	dm := NewDictManager(tmp, false)
 	dm.reloadDicts([]string{
 		"https://github.com/uasi/skk-emoji-jisyo/raw/refs/heads/master/SKK-JISYO.emoji.utf8",
+		"../../testdata/jisyo.utf8",
 	})
 
 	assert.Equal(t, "1/👍/", dm.HandleRequest("1+1"))
+	assert.Equal(t, "1/キロ/", dm.HandleRequest("11024"))
+}
+
+func TestLocalDict(t *testing.T) {
+	tmp := prepareTempDir(t)
+	defer os.RemoveAll(tmp)
+
+	dm := NewDictManager(tmp, false)
+	dm.reloadDicts([]string{
+		"../../testdata/jisyo.utf8",
+		"../../testdata/jisyo.euc-jp",
+	})
+
+	cases := [][]string{
+		{"/キロ/", "1024"},
+		{"/ā;a-/å;a^/ä;a:/ã;a~/â;a^/á;a'/à;a`/ă;av/ą;a,/ⓐ;(a)/ª;西語女性序数/ɐ;[IPA]/ʌ;[IPA]/ɑ;[IPA]/ɒ;[IPA]/", "a"},
+	}
+	for idx, c := range cases {
+		msg := "case " + strconv.Itoa(idx)
+		cdd := dm.cm.findCandidates(c[1])
+		assert.Equal(t, c[0], cdd, msg)
+	}
 }
 
 func TestDownloadDictionary(t *testing.T) {
@@ -89,7 +112,7 @@ func TestLoadDictionaries(t *testing.T) {
 	defer os.RemoveAll(tmp)
 
 	dm := NewDictManager(tmp, false)
-	dm.loadDictionaries([]string{
+	dm.loadFiles([]string{
 		"../../testdata/jisyo.utf8",
 		"../../testdata/jisyo.euc-jp",
 	})
@@ -111,10 +134,23 @@ func TestReloadDicts(t *testing.T) {
 
 	dm := NewDictManager(tmp, false)
 	dm.reloadDicts([]string{
-		"https://github.com/uasi/skk-emoji-jisyo/raw/refs/heads/master/SKK-JISYO.emoji.utf8",
+		"../../testdata/jisyo.utf8",
 	})
 
 	cases := [][]string{
+		{"/台湾/", "taiwan"},
+	}
+	for idx, c := range cases {
+		msg := "case " + strconv.Itoa(idx)
+		cdd := dm.cm.findCandidates(c[1])
+		assert.Equal(t, c[0], cdd, msg)
+	}
+
+	dm.reloadDicts([]string{
+		"../../testdata/jisyo-2.utf8",
+	})
+
+	cases = [][]string{
 		{"/🇹🇼/", "taiwan"},
 	}
 	for idx, c := range cases {
@@ -124,52 +160,18 @@ func TestReloadDicts(t *testing.T) {
 	}
 
 	dm.reloadDicts([]string{
-		"https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.china_taiwan",
+		"../../testdata/jisyo.utf8",
+		"../../testdata/jisyo-2.utf8",
 	})
 
 	cases = [][]string{
-		{"/台湾/", "taiwan"},
+		{"/台湾/🇹🇼/", "taiwan"},
 	}
 	for idx, c := range cases {
 		msg := "case " + strconv.Itoa(idx)
 		cdd := dm.cm.findCandidates(c[1])
 		assert.Equal(t, c[0], cdd, msg)
 	}
-
-	dm.reloadDicts([]string{
-		"https://github.com/uasi/skk-emoji-jisyo/raw/refs/heads/master/SKK-JISYO.emoji.utf8",
-		"https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.china_taiwan",
-	})
-
-	cases = [][]string{
-		{"/🇹🇼/台湾/", "taiwan"},
-	}
-	for idx, c := range cases {
-		msg := "case " + strconv.Itoa(idx)
-		cdd := dm.cm.findCandidates(c[1])
-		assert.Equal(t, c[0], cdd, msg)
-	}
-
-	dm.DictionariesDidChange([]string{
-		"https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.china_taiwan",
-	})
-	cases = [][]string{
-		{"/台湾/", "taiwan"},
-	}
-	for idx, c := range cases {
-		msg := "case " + strconv.Itoa(idx)
-		cdd := dm.cm.findCandidates(c[1])
-		assert.Equal(t, c[0], cdd, msg)
-	}
-}
-
-func TestDictionaryPaths(t *testing.T) {
-	urls := []string{
-		"https://test.com/dict1.abc",
-		"https://test.com/dict2.def",
-	}
-	paths := dictionaryPaths(urls, "/dir")
-	assert.Equal(t, []string{"/dir/dict1.abc", "/dir/dict2.def"}, paths)
 }
 
 // helper func

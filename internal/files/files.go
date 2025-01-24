@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 func FileChecksum(path string) (string, error) {
@@ -25,4 +27,26 @@ func FileChecksum(path string) (string, error) {
 func IsFileExisting(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+func DictionaryPaths(urls []string, directory string) []string {
+	paths := []string{}
+	for _, u := range urls {
+		if IsLocalURL(u) {
+			paths = append(paths, u)
+			continue
+		}
+		p := filepath.Join(directory, DictName(u))
+		paths = append(paths, p)
+	}
+
+	return paths
+}
+
+func DictName(url string) string {
+	return filepath.Base(url)
+}
+
+func IsLocalURL(url string) bool {
+	return !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://")
 }

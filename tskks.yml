@@ -1,5 +1,5 @@
 DictionaryDirectory: ./.dict
-ListenAddr: 127.0.0.1:1179
+ListenAddr: 127.0.0.1:1178
 FallbackToGoogle: true
 
 # daily, weekly, monthly, debug, disabled
