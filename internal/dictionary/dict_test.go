@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/waynezhang/tskks/internal/iconv"
 )
 
 func TestLoadDict(t *testing.T) {
@@ -22,9 +21,9 @@ func TestLoadInvalidDict(t *testing.T) {
 }
 
 func TestParseEncoding(t *testing.T) {
-	assert.Equal(t, iconv.ENCODING_UNDECIDED, parseEncoding(""))
-	assert.Equal(t, iconv.ENCODING_UNDECIDED, parseEncoding("xxx"))
-	assert.Equal(t, iconv.ENCODING_UNDECIDED, parseEncoding(";; -*- coding -*-"))
-	assert.Equal(t, iconv.ENCODING_EUCJP, parseEncoding(";; -*- coding: euc-jis-2004 -*-"))
-	assert.Equal(t, iconv.ENCODING_UTF8, parseEncoding(";; -*- coding: utf-8 -*-"))
+	assert.Equal(t, ENCODING_UNDECIDED, parseEncoding([]byte("")))
+	assert.Equal(t, ENCODING_UNDECIDED, parseEncoding([]byte("xxx")))
+	assert.Equal(t, ENCODING_UNDECIDED, parseEncoding([]byte(";; -*- coding -*-")))
+	assert.Equal(t, ENCODING_EUCJP, parseEncoding([]byte(";; -*- coding: euc-jis-2004 -*-")))
+	assert.Equal(t, ENCODING_UTF8, parseEncoding([]byte(";; -*- coding: utf-8 -*-")))
 }

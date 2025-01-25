@@ -1,6 +1,6 @@
 module github.com/waynezhang/tskks
 
-go 1.23.4
+go 1.23.5
 
 require (
 	github.com/fsnotify/fsnotify v1.8.0
@@ -11,6 +11,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/tidwall/btree v1.7.0
+	github.com/waynezhang/eucjis2004decode v0.0.0-20250125071617-74743e0701e6
 )
 
 require (

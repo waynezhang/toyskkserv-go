@@ -2,14 +2,15 @@ package server
 
 import (
 	"bufio"
+	"bytes"
 	"log/slog"
 	"net"
 	"strings"
 
+	"github.com/waynezhang/eucjis2004decode/decode"
 	"github.com/waynezhang/tskks/internal/config"
 	"github.com/waynezhang/tskks/internal/defs"
 	"github.com/waynezhang/tskks/internal/dictionary"
-	"github.com/waynezhang/tskks/internal/iconv"
 )
 
 type Server struct {
@@ -73,13 +74,14 @@ func (s *Server) handleConnection(c net.Conn) {
 }
 
 func (s *Server) handleRequest(req string) (resp string, running bool) {
-	decoded, err := iconv.EUCJPConverter.ConvertLine(req)
+	buf := bytes.NewBuffer(nil)
+	err := decode.Convert([]byte(req), buf)
 	if err != nil {
 		slog.Error("Failed to decode string", "req", req)
 		return "", true
 	}
 
-	req = strings.TrimSuffix(decoded, "\n")
+	req = strings.TrimSuffix(buf.String(), "\n")
 	if len(req) == 0 {
 		slog.Error("Empty reqeust")
 		return "", true

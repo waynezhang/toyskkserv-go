@@ -2,13 +2,23 @@ package dictionary
 
 import (
 	"bufio"
+	"bytes"
 	"log/slog"
 	"os"
 	"regexp"
 	"strings"
 
-	"github.com/waynezhang/tskks/internal/iconv"
+	"github.com/waynezhang/eucjis2004decode/decode"
 )
+
+const (
+	ENCODING_UNDECIDED = "undecided"
+	ENCODING_UTF8      = "utf-8"
+	ENCODING_EUCJP     = "euc-jp"
+)
+
+// -*- coding: euc-jis-2004 -*-
+var codingRegex = regexp.MustCompile(`coding:\s*([\w-]+)`)
 
 func loadFile(path string, cm *candidatesManager) {
 	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
@@ -18,63 +28,63 @@ func loadFile(path string, cm *candidatesManager) {
 	}
 	defer f.Close()
 
-	enc := iconv.ENCODING_UNDECIDED
+	enc := ENCODING_UNDECIDED
 	if strings.HasSuffix(path, ".utf8") {
-		enc = iconv.ENCODING_UTF8
+		enc = ENCODING_UTF8
 	}
+
+	buf := bytes.NewBuffer(nil)
 
 	s := bufio.NewScanner(f)
 	idx := 0
 	for s.Scan() {
 		idx++
-		line := string(s.Bytes())
-		if strings.HasPrefix(line, ";;") {
-			if enc == iconv.ENCODING_UNDECIDED {
-				enc = parseEncoding(line)
+		buf.Reset()
+
+		bs := s.Bytes()
+		if bytes.HasPrefix(bs, []byte{';', ';'}) {
+			if enc == ENCODING_UNDECIDED {
+				enc = parseEncoding(bs)
 			}
 			continue
 		}
 
-		if enc == iconv.ENCODING_UNDECIDED {
+		if enc == ENCODING_UNDECIDED {
 			// default
-			enc = iconv.ENCODING_EUCJP
+			enc = ENCODING_EUCJP
 		}
-		if enc == iconv.ENCODING_UTF8 {
-			parseLine(line, cm)
+		if enc == ENCODING_UTF8 {
+			parseLine(bs, cm)
 		} else {
-			s, err := iconv.EUCJPConverter.ConvertLine(line)
+			err := decode.Convert(s.Bytes(), buf)
 			if err != nil {
-				slog.Error("Failed to covnert encoding", "file", path, "no", idx, "text", line)
+				slog.Error("Failed to covnert encoding", "file", path, "no", idx, "text", string(bs))
 				continue
 			}
-			parseLine(s, cm)
+			parseLine(buf.Bytes(), cm)
 		}
 	}
+
+	buf.Reset()
 }
 
-func parseEncoding(str string) string {
-	// -*- coding: euc-jis-2004 -*-
-	re := regexp.MustCompile(`coding:\s*([\w-]+)`)
-	matches := re.FindStringSubmatch(str)
+func parseEncoding(bs []byte) string {
+	matches := codingRegex.FindSubmatch(bs)
 	if len(matches) == 0 {
-		return iconv.ENCODING_UNDECIDED
+		return ENCODING_UNDECIDED
 	}
 
-	if strings.HasPrefix(matches[1], "utf-8") {
-		return iconv.ENCODING_UTF8
+	if bytes.Compare(matches[1], []byte{'u', 't', 'f', '-', '8'}) == 0 {
+		return ENCODING_UTF8
 	} else {
 		// by default
-		return iconv.ENCODING_EUCJP
+		return ENCODING_EUCJP
 	}
 }
 
-func parseLine(str string, cm *candidatesManager) {
-	if strings.HasPrefix(str, ";;") {
-		return
-	}
-
-	keyEnd := strings.Index(str, " ")
-	key := string(str[:keyEnd])
-	candidates := string(str[keyEnd+1:]) // /val1/
+func parseLine(bs []byte, cm *candidatesManager) {
+	keyEnd := bytes.IndexByte(bs, ' ')
+	key := string(bs[:keyEnd])
+	candidates := string(bs[keyEnd+1:]) // /val1/
 	cm.addCandidates(key, candidates)
 }
