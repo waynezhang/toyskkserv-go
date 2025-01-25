@@ -25,7 +25,7 @@ var (
 
 func Shared() *Config {
 	once.Do(func() {
-		viper.SetConfigName("tskks")
+		viper.SetConfigName("toyskkserv")
 		viper.AddConfigPath(".")
 		viper.AddConfigPath("$HOME/.config")
 

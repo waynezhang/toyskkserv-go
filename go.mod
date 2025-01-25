@@ -1,4 +1,4 @@
-module github.com/waynezhang/tskks
+module github.com/waynezhang/toyskkserv
 
 go 1.23.5
 

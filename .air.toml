@@ -3,7 +3,7 @@ testdata_dir = "testdata"
 
 [build]
   args_bin = []
-  bin = "./bin/tskks -v serve"
+  bin = "./bin/toyskkserv -v serve"
   cmd = "make"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]

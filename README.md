@@ -1,4 +1,4 @@
-# tskks
+# toyskkserv
 
 A toy SKK skkseev. Just made this for fun.
 

@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/waynezhang/eucjis2004decode/decode"
-	"github.com/waynezhang/tskks/internal/config"
-	"github.com/waynezhang/tskks/internal/defs"
-	"github.com/waynezhang/tskks/internal/dictionary"
+	"github.com/waynezhang/toyskkserv/internal/config"
+	"github.com/waynezhang/toyskkserv/internal/defs"
+	"github.com/waynezhang/toyskkserv/internal/dictionary"
 )
 
 type Server struct {

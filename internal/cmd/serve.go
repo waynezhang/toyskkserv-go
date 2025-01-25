@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/waynezhang/tskks/internal/config"
-	"github.com/waynezhang/tskks/internal/dictionary"
-	"github.com/waynezhang/tskks/internal/scheduler"
-	"github.com/waynezhang/tskks/internal/server"
-	"github.com/waynezhang/tskks/internal/tcp"
+	"github.com/waynezhang/toyskkserv/internal/config"
+	"github.com/waynezhang/toyskkserv/internal/dictionary"
+	"github.com/waynezhang/toyskkserv/internal/scheduler"
+	"github.com/waynezhang/toyskkserv/internal/server"
+	"github.com/waynezhang/toyskkserv/internal/tcp"
 )
 
 func init() {

@@ -6,9 +6,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/waynezhang/tskks/internal/config"
-	"github.com/waynezhang/tskks/internal/files"
-	"github.com/waynezhang/tskks/internal/googleapi"
+	"github.com/waynezhang/toyskkserv/internal/config"
+	"github.com/waynezhang/toyskkserv/internal/files"
+	"github.com/waynezhang/toyskkserv/internal/googleapi"
 )
 
 type DictManager struct {

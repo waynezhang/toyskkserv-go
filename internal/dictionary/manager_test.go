@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/waynezhang/tskks/internal/files"
+	"github.com/waynezhang/toyskkserv/internal/files"
 )
 
 func TestNew(t *testing.T) {
@@ -176,7 +176,7 @@ func TestReloadDicts(t *testing.T) {
 
 // helper func
 func prepareTempDir(t *testing.T) string {
-	tmp, err := os.MkdirTemp("", "tskks-test")
+	tmp, err := os.MkdirTemp("", "toyskkserv-test")
 	assert.Nil(t, err)
 
 	return tmp

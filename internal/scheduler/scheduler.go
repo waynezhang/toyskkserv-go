@@ -4,8 +4,8 @@ import (
 	"log/slog"
 
 	"github.com/go-co-op/gocron/v2"
-	"github.com/waynezhang/tskks/internal/config"
-	"github.com/waynezhang/tskks/internal/files"
+	"github.com/waynezhang/toyskkserv/internal/config"
+	"github.com/waynezhang/toyskkserv/internal/files"
 )
 
 func StartUpdateWatcher(cfg *config.Config) {

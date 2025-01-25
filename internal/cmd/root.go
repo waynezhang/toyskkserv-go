@@ -11,7 +11,7 @@ import (
 var rootCmd = func() *cobra.Command {
 	var verbose bool
 	cmd := &cobra.Command{
-		Use:   "tskks",
+		Use:   "toyskkserv",
 		Short: "Toy SKK Server",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			level := slog.LevelWarn

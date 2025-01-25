@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/waynezhang/tskks/internal/defs"
+	"github.com/waynezhang/toyskkserv/internal/defs"
 )
 
 func init() {

@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net"
 
-	"github.com/waynezhang/tskks/internal/defs"
+	"github.com/waynezhang/toyskkserv/internal/defs"
 )
 
 func SendReloadCommand(addr string) {

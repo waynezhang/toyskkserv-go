@@ -45,7 +45,7 @@ func TestUpdateDictionary(t *testing.T) {
 
 // helper func
 func prepareTempDir(t *testing.T) string {
-	tmp, err := os.MkdirTemp("", "tskks-test")
+	tmp, err := os.MkdirTemp("", "toyskkserv-test")
 	assert.Nil(t, err)
 
 	return tmp

@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/waynezhang/tskks/internal/defs"
-	"github.com/waynezhang/tskks/internal/dictionary"
+	"github.com/waynezhang/toyskkserv/internal/defs"
+	"github.com/waynezhang/toyskkserv/internal/dictionary"
 )
 
 func TestNew(t *testing.T) {
@@ -54,7 +54,7 @@ func TestHandleRequest(t *testing.T) {
 
 // helper func
 func prepareTempDir(t *testing.T) string {
-	tmp, err := os.MkdirTemp("", "tskks-test")
+	tmp, err := os.MkdirTemp("", "toyskkserv-test")
 	assert.Nil(t, err)
 
 	return tmp

@@ -5,8 +5,8 @@ import (
 	"os"
 
 	getter "github.com/hashicorp/go-getter"
-	"github.com/waynezhang/tskks/internal/config"
-	"github.com/waynezhang/tskks/internal/tcp"
+	"github.com/waynezhang/toyskkserv/internal/config"
+	"github.com/waynezhang/toyskkserv/internal/tcp"
 )
 
 func UpdateDictionaries(urls []string, dictDirectory string) {
