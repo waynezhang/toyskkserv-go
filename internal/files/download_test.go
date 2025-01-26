@@ -40,7 +40,16 @@ func TestDownload(t *testing.T) {
 }
 
 func TestUpdateDictionary(t *testing.T) {
+	tmp := prepareTempDir(t)
+	defer os.RemoveAll(tmp)
 
+	UpdateDictionaries([]string{
+		"https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.edict",
+		"https://github.com/skk-dev/dict/raw/refs/heads/master/SKK-JISYO.china_taiwan",
+	}, tmp)
+
+	assert.True(t, IsFileExisting(filepath.Join(tmp, "SKK-JISYO.edict")))
+	assert.True(t, IsFileExisting(filepath.Join(tmp, "SKK-JISYO.china_taiwan")))
 }
 
 // helper func

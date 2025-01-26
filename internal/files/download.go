@@ -3,6 +3,7 @@ package files
 import (
 	"log/slog"
 	"os"
+	"path/filepath"
 
 	getter "github.com/hashicorp/go-getter"
 	"github.com/waynezhang/toyskkserv/internal/config"
@@ -19,7 +20,8 @@ func UpdateDictionaries(urls []string, dictDirectory string) {
 
 	updated := false
 	for _, url := range urls {
-		u, err := Download(url, dictDirectory)
+		path := filepath.Join(dictDirectory, filepath.Base(url))
+		u, err := Download(url, path)
 		if err != nil {
 			slog.Error("Failed to download file", "url", url)
 			continue
