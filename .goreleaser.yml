@@ -1,0 +1,46 @@
+project_name: toyskkserv
+version: 2
+env:
+  - GO111MODULE=on
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - main: .
+    binary: toyskkserv
+    ldflags:
+      - -s -w
+      - -X github.com/waynezhang/toyskkserv/internal/defs.Version={{.Version}}
+      - -X github.com/waynezhang/toyskkserv/internal/defs.Revision={{.ShortCommit}}
+    env:
+      - CGO_ENABLED=0
+archives:
+  - name_template: >-
+      {{- .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end -}}
+    format_overrides:
+      - goos: windows
+        format: zip
+brews:
+  - repository:
+      owner: waynezhang
+      name: homebrew-tap
+    commit_author:
+      name: waynezhang
+      email: linghua.zhang@me.com
+    homepage: "https://github.com/waynezhang/toyskkserv"
+    description: "A toy SKK skkseev. Just made this for fun."
+    license: "MIT License"
+    skip_upload: auto
+    service: |
+      run [opt_bin/"toyskkserv", "serve"]
+      keep_alive true
+      log_path var/"log/toyskkserv.log"
+      error_log_path var/"log/toyskkserv.log"
+
+release:
+  prerelease: auto
