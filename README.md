@@ -1,6 +1,6 @@
 # toyskkserv
 
-A toy SKK skkseev. Just made this for fun.
+A toy SKK skkserv. Just made this for fun.
 
 ## Features
 
