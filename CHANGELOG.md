@@ -1,3 +1,11 @@
+## Unreleased (2025-01-26)
+
+### Bugs fixed:
+
+- local dictionary cannot be loaded correctly([`ae3cc98`](https://github.com/waynezhang/tskks/commit/ae3cc9866d1a02620f96cdfc65990feb01556098))
+- fix dictionary update([`9e7dd27`](https://github.com/waynezhang/tskks/commit/9e7dd27b845a7593da0d6d447cbb855e76293f35))
+
+
 ## v0.0.1 (2025-01-26)
 
 ### New feature:
