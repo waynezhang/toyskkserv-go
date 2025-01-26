@@ -1,6 +1,7 @@
 package files
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -40,7 +41,12 @@ func TestDictionaryPaths(t *testing.T) {
 		"https://test.com/dict3.ghi",
 		"/usr/local/bin",
 		"https://test.com/dict4.jkl",
+		"~/abc",
 	}
+
+	home, err := os.UserHomeDir()
+	assert.Nil(t, err)
+
 	paths := DictionaryPaths(urls, "/dir")
 	assert.Equal(t, []string{
 		"/dir/dict1.abc",
@@ -49,6 +55,7 @@ func TestDictionaryPaths(t *testing.T) {
 		"/dir/dict3.ghi",
 		"/usr/local/bin",
 		"/dir/dict4.jkl",
+		home + "/abc",
 	}, paths)
 }
 

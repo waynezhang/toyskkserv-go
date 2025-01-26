@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/mitchellh/go-homedir"
 )
 
 func FileChecksum(path string) (string, error) {
@@ -33,7 +35,8 @@ func DictionaryPaths(urls []string, directory string) []string {
 	paths := []string{}
 	for _, u := range urls {
 		if IsLocalURL(u) {
-			paths = append(paths, u)
+			e, _ := homedir.Expand(u)
+			paths = append(paths, e)
 			continue
 		}
 		p := filepath.Join(directory, DictName(u))

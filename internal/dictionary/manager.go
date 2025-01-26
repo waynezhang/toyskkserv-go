@@ -93,8 +93,8 @@ func (dm *DictManager) downloadDictionaries(urls []string) {
 	slog.Info("Start loading dictionaries")
 
 	for _, url := range urls {
-		if files.IsFileExisting(url) {
-			slog.Debug("Skip local file", "url", url)
+		if files.IsLocalURL(url) {
+			slog.Info("Skip local file", "url", url)
 			continue
 		}
 
