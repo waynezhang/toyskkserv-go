@@ -4,7 +4,7 @@ go 1.23.5
 
 require (
 	github.com/fsnotify/fsnotify v1.8.0
-	github.com/go-co-op/gocron/v2 v2.14.2
+	github.com/go-co-op/gocron/v2 v2.15.0
 	github.com/hashicorp/go-getter v1.7.8
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.8.1
