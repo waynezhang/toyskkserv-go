@@ -1,4 +1,8 @@
-## Unreleased (2025-01-26)
+## v0.0.3 (2025-01-28)
+
+- Memory usage improvement
+
+## v0.0.2 (2025-01-26)
 
 ### Bugs fixed:
 
