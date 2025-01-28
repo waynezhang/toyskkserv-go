@@ -4,7 +4,6 @@ import (
 	"io"
 	"log/slog"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/waynezhang/toyskkserv/internal/config"
@@ -43,15 +42,13 @@ func NewDictManager(directory string, fallbackToGoogle bool) *DictManager {
 	}
 }
 
-func (dm *DictManager) HandleRequest(req string, w io.Writer) {
+func (dm *DictManager) HandleRequest(key string, w io.Writer) {
 	slog.Info("Start finding candidates")
 	defer slog.Info("Finished finding candidates")
 
-	key := strings.TrimSuffix(strings.TrimPrefix(req, "1"), " ")
 	candidates := dm.cm.findCandidates(key)
 
 	if len(candidates) > 0 {
-		w.Write([]byte{'1'})
 		w.Write([]byte(candidates))
 		return
 	}
@@ -59,44 +56,26 @@ func (dm *DictManager) HandleRequest(req string, w io.Writer) {
 	if dm.fallbackToGoogle {
 		candidates = googleapi.TransliterateRequest(key)
 		if len(candidates) > 0 {
-			w.Write([]byte{'1'})
 			w.Write([]byte(candidates))
 			w.Write([]byte{'/'})
 			return
 		}
 	}
-
-	w.Write([]byte{'4'})
-	w.Write([]byte(key))
-	w.Write([]byte{' '})
-	return
 }
 
-func (dm *DictManager) HandleCompletion(req string, w io.Writer) {
+func (dm *DictManager) HandleCompletion(key string, w io.Writer) {
 	slog.Info("Start finding completions")
 	defer slog.Info("Finished finding completions")
 
-	key := strings.TrimSuffix(strings.TrimPrefix(req, "4"), " ")
-
 	found := false
 	dm.cm.iterateCompletions(key, func(c string) {
-		if !found {
-			found = true
-			w.Write([]byte{'1'})
-			w.Write([]byte{'/'})
-		}
-		w.Write([]byte([]byte(c)))
+		found = true
 		w.Write([]byte{'/'})
+		w.Write([]byte([]byte(c)))
 	})
-
 	if found {
-		return
+		w.Write([]byte{'/'})
 	}
-
-	w.Write([]byte{'4'})
-	w.Write([]byte(key))
-	w.Write([]byte{' '})
-	return
 }
 
 func (dm *DictManager) DictionariesDidChange(urls []string) {

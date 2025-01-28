@@ -29,23 +29,14 @@ func TestHandleRequest(t *testing.T) {
 
 	dm := NewDictManager(tmp, false)
 
-	cases := [][]string{
-		{"4 ", ""},
-		{"4 ", " "},
-		{"4 ", "1"},
-		{"4abc ", "1abc"},
-		{"4abc ", "1abc "},
-	}
-
-	for _, c := range cases {
-		assert.Equal(t, c[0], handleRequestBridge(c[1], dm))
-	}
+	assert.Equal(t, "", handleRequestBridge("", dm))
+	assert.Equal(t, "", handleRequestBridge("abc", dm))
 
 	dm.cm.addCandidates("abc", "/test1/test2/test3/")
-	assert.Equal(t, "1/test1/test2/test3/", handleRequestBridge("1abc", dm))
+	assert.Equal(t, "/test1/test2/test3/", handleRequestBridge("abc", dm))
 
 	dm.fallbackToGoogle = true
-	assert.Equal(t, "1/アイウエオ/ア・イ・ウ・エ・オ/愛飢え男/aiueo/", handleRequestBridge("1あいうえお", dm))
+	assert.Equal(t, "/アイウエオ/ア・イ・ウ・エ・オ/愛飢え男/aiueo/", handleRequestBridge("あいうえお", dm))
 }
 
 func TestHandleCompletion(t *testing.T) {
@@ -54,17 +45,15 @@ func TestHandleCompletion(t *testing.T) {
 
 	dm := NewDictManager(tmp, false)
 
-	assert.Equal(t, "4 ", handleCompletionBridge("", dm))
-	assert.Equal(t, "4 ", handleCompletionBridge(" ", dm))
-	assert.Equal(t, "4 ", handleCompletionBridge("4", dm))
-	assert.Equal(t, "4abc ", handleCompletionBridge("4abc", dm))
-	assert.Equal(t, "4abc ", handleCompletionBridge("4abc ", dm))
+	assert.Equal(t, "", handleCompletionBridge("", dm))
+	assert.Equal(t, "", handleCompletionBridge(" ", dm))
+	assert.Equal(t, "", handleCompletionBridge("abc", dm))
 
 	dm.cm.addCandidates("abc", "/test1/test2/test3/")
-	assert.Equal(t, "1/abc/", handleCompletionBridge("4ab", dm))
+	assert.Equal(t, "/abc/", handleCompletionBridge("ab", dm))
 
 	dm.cm.addCandidates("abd", "/test1/test2/test3/")
-	assert.Equal(t, "1/abc/abd/", handleCompletionBridge("4ab", dm))
+	assert.Equal(t, "/abc/abd/", handleCompletionBridge("ab", dm))
 }
 
 func TestLoadAll(t *testing.T) {
@@ -77,8 +66,8 @@ func TestLoadAll(t *testing.T) {
 		"../../testdata/jisyo.utf8",
 	})
 
-	assert.Equal(t, "1/👍/", handleRequestBridge("1+1", dm))
-	assert.Equal(t, "1/キロ/", handleRequestBridge("11024", dm))
+	assert.Equal(t, "/👍/", handleRequestBridge("+1", dm))
+	assert.Equal(t, "/キロ/", handleRequestBridge("1024", dm))
 }
 
 func TestLocalDict(t *testing.T) {

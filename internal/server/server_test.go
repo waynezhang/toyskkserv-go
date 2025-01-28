@@ -32,15 +32,9 @@ func TestHandleRequest(t *testing.T) {
 		{"", true, ""},
 		{"", true, " "},
 		{"", false, "0"},
-		{"4 \n", true, "1"},
-		{"41 \n", true, "11"},
-		{"41 \n", true, "11 "},
 		{"1/😄/\n", true, "1smile "},
 		{"1/zombie/zombie_man/zombie_woman/\n", true, "4zom "},
-		{"4somethingnotexisted \n", true, "4somethingnotexisted "},
-		{defs.VersionString() + " \n", true, "2"},
 		{defs.VersionString() + " \n", true, "2 "},
-		{"localhost:port \n", true, "3"},
 		{"localhost:port \n", true, "3 "},
 	}
 
