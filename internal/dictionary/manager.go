@@ -1,6 +1,7 @@
 package dictionary
 
 import (
+	"io"
 	"log/slog"
 	"path/filepath"
 	"strings"
@@ -42,7 +43,7 @@ func NewDictManager(directory string, fallbackToGoogle bool) *DictManager {
 	}
 }
 
-func (dm *DictManager) HandleRequest(req string) string {
+func (dm *DictManager) HandleRequest(req string, w io.Writer) {
 	slog.Info("Start finding candidates")
 	defer slog.Info("Finished finding candidates")
 
@@ -50,31 +51,52 @@ func (dm *DictManager) HandleRequest(req string) string {
 	candidates := dm.cm.findCandidates(key)
 
 	if len(candidates) > 0 {
-		return "1" + candidates
+		w.Write([]byte{'1'})
+		w.Write([]byte(candidates))
+		return
 	}
 
 	if dm.fallbackToGoogle {
 		candidates = googleapi.TransliterateRequest(key)
 		if len(candidates) > 0 {
-			return "1" + candidates + "/"
+			w.Write([]byte{'1'})
+			w.Write([]byte(candidates))
+			w.Write([]byte{'/'})
+			return
 		}
 	}
 
-	return "4/" + key + " "
+	w.Write([]byte{'4'})
+	w.Write([]byte(key))
+	w.Write([]byte{' '})
+	return
 }
 
-func (dm *DictManager) HandleCompletion(req string) string {
+func (dm *DictManager) HandleCompletion(req string, w io.Writer) {
 	slog.Info("Start finding completions")
 	defer slog.Info("Finished finding completions")
 
 	key := strings.TrimSuffix(strings.TrimPrefix(req, "4"), " ")
-	candidates := dm.cm.findCompletions(key)
 
-	if len(candidates) > 0 {
-		return "1" + candidates
+	found := false
+	dm.cm.iterateCompletions(key, func(c string) {
+		if !found {
+			found = true
+			w.Write([]byte{'1'})
+			w.Write([]byte{'/'})
+		}
+		w.Write([]byte([]byte(c)))
+		w.Write([]byte{'/'})
+	})
+
+	if found {
+		return
 	}
 
-	return "4/" + key + " "
+	w.Write([]byte{'4'})
+	w.Write([]byte(key))
+	w.Write([]byte{' '})
+	return
 }
 
 func (dm *DictManager) DictionariesDidChange(urls []string) {

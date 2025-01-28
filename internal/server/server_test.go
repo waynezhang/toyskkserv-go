@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"os"
 	"strconv"
 	"testing"
@@ -31,12 +32,12 @@ func TestHandleRequest(t *testing.T) {
 		{"", true, ""},
 		{"", true, " "},
 		{"", false, "0"},
-		{"4/ \n", true, "1"},
-		{"4/1 \n", true, "11"},
-		{"4/1 \n", true, "11 "},
+		{"4 \n", true, "1"},
+		{"41 \n", true, "11"},
+		{"41 \n", true, "11 "},
 		{"1/😄/\n", true, "1smile "},
 		{"1/zombie/zombie_man/zombie_woman/\n", true, "4zom "},
-		{"4/somethingnotexisted \n", true, "4somethingnotexisted "},
+		{"4somethingnotexisted \n", true, "4somethingnotexisted "},
 		{defs.VersionString() + " \n", true, "2"},
 		{defs.VersionString() + " \n", true, "2 "},
 		{"localhost:port \n", true, "3"},
@@ -44,9 +45,14 @@ func TestHandleRequest(t *testing.T) {
 	}
 
 	s := New("localhost:port", dm)
+	w := bytes.NewBuffer(nil)
 	for i, c := range cases {
 		msg := "case " + strconv.Itoa(i)
-		resp, running := s.handleRequest(c[2].(string))
+		w.Reset()
+
+		running := s.handleRequest(c[2].(string), w)
+		resp := w.String()
+
 		assert.Equal(t, c[0], resp, msg)
 		assert.Equal(t, c[1], running, msg)
 	}

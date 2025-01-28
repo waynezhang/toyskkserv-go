@@ -37,10 +37,23 @@ func TestCompletions(t *testing.T) {
 	cm.addCandidates("abd", "/val3/")
 	cm.addCandidates("abd", "/val4/")
 
-	assert.Equal(t, cm.findCompletions("a"), "/abc/abd/")
-	assert.Equal(t, cm.findCompletions("ab"), "/abc/abd/")
-	assert.Equal(t, cm.findCompletions("abc"), "/abc/")
-	assert.Equal(t, cm.findCompletions("A"), "/ABC/")
+	cases := [][]string{
+		{"a", "/abc/abd/"},
+		{"ab", "/abc/abd/"},
+		{"abc", "/abc/"},
+		{"A", "/ABC/"},
+		{"def", ""},
+	}
 
-	assert.Equal(t, cm.findCompletions("def"), "")
+	for _, c := range cases {
+		key := c[0]
+		comps := ""
+		cm.iterateCompletions(key, func(c string) {
+			comps += c + "/"
+		})
+		if len(comps) > 0 {
+			comps = "/" + comps
+		}
+		assert.Equal(t, c[1], comps)
+	}
 }

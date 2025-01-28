@@ -2,6 +2,7 @@ package server
 
 import (
 	"bufio"
+	"io"
 	"log/slog"
 	"net"
 	"strings"
@@ -66,18 +67,15 @@ func (s *Server) handleConnection(c net.Conn) {
 			return
 		}
 
-		resp, r := s.handleRequest(line)
-		c.Write([]byte(resp))
-
-		running = r
+		running = s.handleRequest(line, c)
 	}
 }
 
-func (s *Server) handleRequest(req string) (resp string, running bool) {
+func (s *Server) handleRequest(req string, w io.Writer) bool {
 	req = strings.TrimSuffix(req, "\n")
 	if len(req) == 0 {
 		slog.Error("Empty reqeust")
-		return "", true
+		return true
 	}
 	slog.Info("Req received", "req", "["+req+"]", "cmd", req[0])
 
@@ -87,7 +85,7 @@ func (s *Server) handleRequest(req string) (resp string, running bool) {
 		// Request to server: 0 + space + LF
 		// Server terminates and disconnects after receiving the request
 		slog.Info("Req type: disconnect")
-		return "", false
+		return false
 
 	case defs.PROTOCOL_REQUEST:
 		// CLIENT_REQUEST
@@ -98,10 +96,9 @@ func (s *Server) handleRequest(req string) (resp string, running bool) {
 		// The dictionary keys and candidates have the same character encoding
 		// The primary encoding set of SKK is ASCII + euc-jp (note: UTF-8 can also be used in some implementations)
 		slog.Info("Req type: request")
-		res := s.dictManager.HandleRequest(req)
-
-		slog.Info("Response", "res", "["+res+"]")
-		return res + "\n", true
+		s.dictManager.HandleRequest(req, w)
+		w.Write([]byte{'\n'})
+		return true
 
 	case defs.PROTOCOL_VER:
 		// CLIENT_VERSION
@@ -110,7 +107,9 @@ func (s *Server) handleRequest(req string) (resp string, running bool) {
 		// Note: no known client parses this string
 		// Implementation on dbskkd-cdb: returns the version string
 		slog.Info("Req type: version")
-		return defs.VersionString() + " \n", true
+		w.Write([]byte(defs.VersionString()))
+		w.Write([]byte{' ', '\n'})
+		return true
 
 	case defs.PROTOCOL_HOST:
 		// CLIENT_HOST
@@ -119,26 +118,28 @@ func (s *Server) handleRequest(req string) (resp string, running bool) {
 		// Note: no known client parses this string
 		// Implementation on dbskkd-cdb: returns dummy string novalue:
 		slog.Info("Req type: host")
-		return s.listenAddr + " \n", true
+
+		w.Write([]byte(s.listenAddr))
+		w.Write([]byte{' ', '\n'})
+		return true
 
 	case defs.PROTOCOL_COMPLETION:
 		// CLIENT_COMPLETION
 		// Request to server: 4 + dictionary_key + space + LF
 		// Same as CLIENT_REQUEST
 		slog.Info("Req type: completion")
-		res := s.dictManager.HandleCompletion(req)
-
-		slog.Info("Response", "res", "["+res+"]")
-		return res + "\n", true
+		s.dictManager.HandleCompletion(req, w)
+		w.Write([]byte{'\n'})
+		return true
 
 	case 'c':
 		// customized protocol
 		slog.Info("Req type: customize command")
-		return "", s.handleCustomizeCommand(req)
+		return s.handleCustomizeCommand(req)
 
 	default:
 		slog.Error("Invalid request")
-		return "", true
+		return true
 	}
 }
 

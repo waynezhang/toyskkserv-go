@@ -1,6 +1,7 @@
 package dictionary
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -28,17 +29,23 @@ func TestHandleRequest(t *testing.T) {
 
 	dm := NewDictManager(tmp, false)
 
-	assert.Equal(t, "4/ ", dm.HandleRequest(""))
-	assert.Equal(t, "4/ ", dm.HandleRequest(" "))
-	assert.Equal(t, "4/ ", dm.HandleRequest("1"))
-	assert.Equal(t, "4/abc ", dm.HandleRequest("1abc"))
-	assert.Equal(t, "4/abc ", dm.HandleRequest("1abc "))
+	cases := [][]string{
+		{"4 ", ""},
+		{"4 ", " "},
+		{"4 ", "1"},
+		{"4abc ", "1abc"},
+		{"4abc ", "1abc "},
+	}
+
+	for _, c := range cases {
+		assert.Equal(t, c[0], handleRequestBridge(c[1], dm))
+	}
 
 	dm.cm.addCandidates("abc", "/test1/test2/test3/")
-	assert.Equal(t, "1/test1/test2/test3/", dm.HandleRequest("1abc"))
+	assert.Equal(t, "1/test1/test2/test3/", handleRequestBridge("1abc", dm))
 
 	dm.fallbackToGoogle = true
-	assert.Equal(t, "1/アイウエオ/ア・イ・ウ・エ・オ/愛飢え男/aiueo/", dm.HandleRequest("1あいうえお"))
+	assert.Equal(t, "1/アイウエオ/ア・イ・ウ・エ・オ/愛飢え男/aiueo/", handleRequestBridge("1あいうえお", dm))
 }
 
 func TestHandleCompletion(t *testing.T) {
@@ -47,17 +54,17 @@ func TestHandleCompletion(t *testing.T) {
 
 	dm := NewDictManager(tmp, false)
 
-	assert.Equal(t, "4/ ", dm.HandleCompletion(""))
-	assert.Equal(t, "4/ ", dm.HandleCompletion(" "))
-	assert.Equal(t, "4/ ", dm.HandleCompletion("4"))
-	assert.Equal(t, "4/abc ", dm.HandleCompletion("4abc"))
-	assert.Equal(t, "4/abc ", dm.HandleCompletion("4abc "))
+	assert.Equal(t, "4 ", handleCompletionBridge("", dm))
+	assert.Equal(t, "4 ", handleCompletionBridge(" ", dm))
+	assert.Equal(t, "4 ", handleCompletionBridge("4", dm))
+	assert.Equal(t, "4abc ", handleCompletionBridge("4abc", dm))
+	assert.Equal(t, "4abc ", handleCompletionBridge("4abc ", dm))
 
 	dm.cm.addCandidates("abc", "/test1/test2/test3/")
-	assert.Equal(t, "1/abc/", dm.HandleCompletion("4ab"))
+	assert.Equal(t, "1/abc/", handleCompletionBridge("4ab", dm))
 
 	dm.cm.addCandidates("abd", "/test1/test2/test3/")
-	assert.Equal(t, "1/abc/abd/", dm.HandleCompletion("4ab"))
+	assert.Equal(t, "1/abc/abd/", handleCompletionBridge("4ab", dm))
 }
 
 func TestLoadAll(t *testing.T) {
@@ -70,8 +77,8 @@ func TestLoadAll(t *testing.T) {
 		"../../testdata/jisyo.utf8",
 	})
 
-	assert.Equal(t, "1/👍/", dm.HandleRequest("1+1"))
-	assert.Equal(t, "1/キロ/", dm.HandleRequest("11024"))
+	assert.Equal(t, "1/👍/", handleRequestBridge("1+1", dm))
+	assert.Equal(t, "1/キロ/", handleRequestBridge("11024", dm))
 }
 
 func TestLocalDict(t *testing.T) {
@@ -180,4 +187,17 @@ func prepareTempDir(t *testing.T) string {
 	assert.Nil(t, err)
 
 	return tmp
+}
+
+func handleRequestBridge(req string, dm *DictManager) string {
+	buf := bytes.NewBuffer(nil)
+	dm.HandleRequest(req, buf)
+	return buf.String()
+}
+
+func handleCompletionBridge(req string, dm *DictManager) string {
+	buf := bytes.NewBuffer(nil)
+	dm.HandleCompletion(req, buf)
+
+	return buf.String()
 }
