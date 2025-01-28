@@ -30,21 +30,17 @@ func (cm *candidatesManager) findCandidates(key string) string {
 	return c
 }
 
-func (cm *candidatesManager) findCompletions(key string) string {
+func (cm *candidatesManager) iterateCompletions(key string, ite func(c string)) {
 	slog.Info("Find completions", "key", "["+key+"]")
 
-	cdd := ""
 	cm.candidates.Ascend(key, func(k string, v string) bool {
 		if !strings.HasPrefix(k, key) {
 			return false
 		}
-		cdd += k + "/"
+
+		ite(k)
 		return true
 	})
-	if len(cdd) > 0 {
-		cdd = "/" + cdd
-	}
-	return cdd
 }
 
 func (cm *candidatesManager) clear() {
