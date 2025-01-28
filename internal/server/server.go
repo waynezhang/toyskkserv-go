@@ -2,15 +2,15 @@ package server
 
 import (
 	"bufio"
-	"bytes"
 	"log/slog"
 	"net"
 	"strings"
 
-	"github.com/waynezhang/eucjis2004decode/decode"
+	"github.com/waynezhang/eucjis2004decode/eucjis2004"
 	"github.com/waynezhang/toyskkserv/internal/config"
 	"github.com/waynezhang/toyskkserv/internal/defs"
 	"github.com/waynezhang/toyskkserv/internal/dictionary"
+	"golang.org/x/text/transform"
 )
 
 type Server struct {
@@ -56,7 +56,7 @@ func (s *Server) Start() {
 func (s *Server) handleConnection(c net.Conn) {
 	defer c.Close()
 
-	r := bufio.NewReader(c)
+	r := bufio.NewReader(transform.NewReader(c, eucjis2004.EUCJIS2004Decoder{}))
 
 	running := true
 	for running {
@@ -74,14 +74,7 @@ func (s *Server) handleConnection(c net.Conn) {
 }
 
 func (s *Server) handleRequest(req string) (resp string, running bool) {
-	buf := bytes.NewBuffer(nil)
-	err := decode.Convert([]byte(req), buf)
-	if err != nil {
-		slog.Error("Failed to decode string", "req", req)
-		return "", true
-	}
-
-	req = strings.TrimSuffix(buf.String(), "\n")
+	req = strings.TrimSuffix(req, "\n")
 	if len(req) == 0 {
 		slog.Error("Empty reqeust")
 		return "", true

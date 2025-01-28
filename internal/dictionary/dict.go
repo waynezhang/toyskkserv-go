@@ -3,12 +3,14 @@ package dictionary
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"io"
 	"log/slog"
 	"os"
-	"regexp"
 	"strings"
 
-	"github.com/waynezhang/eucjis2004decode/decode"
+	"github.com/waynezhang/eucjis2004decode/eucjis2004"
+	"golang.org/x/text/transform"
 )
 
 const (
@@ -16,9 +18,6 @@ const (
 	ENCODING_UTF8      = "utf-8"
 	ENCODING_EUCJP     = "euc-jp"
 )
-
-// -*- coding: euc-jis-2004 -*-
-var codingRegex = regexp.MustCompile(`coding:\s*([\w-]+)`)
 
 func loadFile(path string, cm *candidatesManager) {
 	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
@@ -29,60 +28,69 @@ func loadFile(path string, cm *candidatesManager) {
 	defer f.Close()
 
 	enc := ENCODING_UNDECIDED
+
 	if strings.HasSuffix(path, ".utf8") {
 		enc = ENCODING_UTF8
+	} else {
+		enc, err = detectFileEncoding(f)
+		if err != nil {
+			slog.Error("Failed to detect encoding", "file", path, "err", err)
+			return
+		}
 	}
 
-	buf := bytes.NewBuffer(nil)
+	var s *bufio.Scanner
+	if enc == ENCODING_UTF8 {
+		s = bufio.NewScanner(f)
+	} else {
+		s = bufio.NewScanner(transform.NewReader(f, eucjis2004.EUCJIS2004Decoder{}))
+	}
 
-	s := bufio.NewScanner(f)
-	idx := 0
 	for s.Scan() {
-		idx++
-		buf.Reset()
-
-		bs := s.Bytes()
-		if bytes.HasPrefix(bs, []byte{';', ';'}) {
-			if enc == ENCODING_UNDECIDED {
-				enc = parseEncoding(bs)
-			}
-			continue
-		}
-
-		if enc == ENCODING_UNDECIDED {
-			// default
-			enc = ENCODING_EUCJP
-		}
-		if enc == ENCODING_UTF8 {
-			parseLine(bs, cm)
-		} else {
-			err := decode.Convert(s.Bytes(), buf)
-			if err != nil {
-				slog.Error("Failed to covnert encoding", "file", path, "no", idx, "text", string(bs))
-				continue
-			}
-			parseLine(buf.Bytes(), cm)
-		}
+		parseLine(s.Bytes(), cm)
 	}
-
-	buf.Reset()
 }
 
-func parseEncoding(bs []byte) string {
-	matches := codingRegex.FindSubmatch(bs)
-	if len(matches) == 0 {
-		return ENCODING_UNDECIDED
+func detectFileEncoding(f *os.File) (string, error) {
+	currPos, err := f.Seek(0, io.SeekCurrent)
+	if err != nil {
+		if errors.Is(err, io.EOF) {
+			err = nil
+		}
+		return ENCODING_EUCJP, err
 	}
 
-	if bytes.Compare(matches[1], []byte{'u', 't', 'f', '-', '8'}) == 0 {
-		return ENCODING_UTF8
+	defer f.Seek(currPos, 0)
+
+	// ;; -*- mode: fundamental; coding: euc-jp -*-
+	b := make([]byte, 1024)
+	_, err = f.Read(b)
+	if err != nil {
+		if errors.Is(err, io.EOF) {
+			err = nil
+		}
+		return ENCODING_EUCJP, err
+	}
+
+	coding := []byte("coding: ")
+	idx := bytes.Index(b, coding)
+	if idx == -1 {
+		return ENCODING_EUCJP, err
+	}
+
+	if bytes.HasPrefix(b[idx+len(coding):], []byte("utf-8")) {
+		return ENCODING_UTF8, nil
 	} else {
 		// by default
-		return ENCODING_EUCJP
+		return ENCODING_EUCJP, nil
 	}
 }
 
 func parseLine(bs []byte, cm *candidatesManager) {
+	if bytes.HasPrefix(bs, []byte{';', ';'}) {
+		return
+	}
+
 	keyEnd := bytes.IndexByte(bs, ' ')
 	key := string(bs[:keyEnd])
 	candidates := string(bs[keyEnd+1:]) // /val1/
