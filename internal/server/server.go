@@ -10,6 +10,7 @@ import (
 	"github.com/waynezhang/eucjis2004decode/eucjis2004"
 	"github.com/waynezhang/toyskkserv/internal/defs"
 	"github.com/waynezhang/toyskkserv/internal/dictionary"
+	"github.com/waynezhang/toyskkserv/internal/server/handler"
 	"golang.org/x/text/transform"
 )
 
@@ -27,18 +28,21 @@ func New(addr string, dm *dictionary.DictManager) *Server {
 	}
 
 	s.handlers = map[byte]requstHandler{}
-	s.handlers[defs.PROTOCOL_DISCONNECT] = &disconnectHandler{}
-	s.handlers[defs.PROTOCOL_REQUEST] = &candidateHandler{dm: dm}
-	s.handlers[defs.PROTOCOL_VER] = &versionHandler{}
-	s.handlers[defs.PROTOCOL_HOST] = &hostHandler{host: addr}
-	s.handlers[defs.PROTOCOL_COMPLETION] = &completionHandler{dm: dm}
-	s.handlers[defs.CUSTOMIZE_PROTOCOL] = &custom_handler{dm: dm}
+	s.handlers[defs.PROTOCOL_DISCONNECT] = &handler.DisconnectHandler{}
+	s.handlers[defs.PROTOCOL_REQUEST] = handler.NewCandidateHandler(dm)
+	s.handlers[defs.PROTOCOL_VER] = &handler.VersionHandler{}
+	s.handlers[defs.PROTOCOL_HOST] = handler.NewHostHandler(addr)
+	s.handlers[defs.PROTOCOL_COMPLETION] = handler.NewCompletionHandler(dm)
+
+	s.handlers[defs.CUSTOMIZE_PROTOCOL] = handler.NewCustomProtocolHandler(
+		handler.DictManagerReload{Dm: dm},
+	)
 
 	return s
 }
 
 type requstHandler interface {
-	do(req string, w io.Writer) bool
+	Do(req string, w io.Writer) bool
 }
 
 func (s *Server) Start() {
@@ -99,5 +103,5 @@ func (s *Server) handleRequest(req string, w io.Writer) bool {
 		return true
 	}
 
-	return h.do(strings.Trim(req[1:], " "), w)
+	return h.Do(strings.Trim(req[1:], " "), w)
 }

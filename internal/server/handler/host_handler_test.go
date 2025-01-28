@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"bytes"
@@ -9,6 +9,6 @@ import (
 
 func TestHostHandler(t *testing.T) {
 	w := bytes.NewBuffer(nil)
-	assert.True(t, hostHandler{host: "127.0.0.1:9999"}.do("", w))
+	assert.True(t, HostHandler{host: "127.0.0.1:9999"}.Do("", w))
 	assert.Equal(t, "127.0.0.1:9999 \n", w.String())
 }

@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"io"
@@ -6,9 +6,9 @@ import (
 	"github.com/waynezhang/toyskkserv/internal/defs"
 )
 
-type versionHandler struct{}
+type VersionHandler struct{}
 
-func (versionHandler) do(req string, w io.Writer) bool {
+func (VersionHandler) Do(req string, w io.Writer) bool {
 	// CLIENT_VERSION
 	// Request to server: 2 + space + LF
 	// Answer: string including server version + space, e.g., dbskkd-cdb-2.00

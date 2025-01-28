@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"bytes"
@@ -10,6 +10,6 @@ import (
 
 func TestVersionHandler(t *testing.T) {
 	w := bytes.NewBuffer(nil)
-	assert.True(t, versionHandler{}.do("", w))
+	assert.True(t, VersionHandler{}.Do("", w))
 	assert.Equal(t, defs.VersionString()+" \n", w.String())
 }

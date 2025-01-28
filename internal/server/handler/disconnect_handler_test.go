@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"bytes"
@@ -8,5 +8,5 @@ import (
 )
 
 func TestDisconnectHandler(t *testing.T) {
-	assert.False(t, disconnectHandler{}.do("", bytes.NewBuffer(nil)))
+	assert.False(t, DisconnectHandler{}.Do("", bytes.NewBuffer(nil)))
 }

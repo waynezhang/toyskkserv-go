@@ -1,12 +1,16 @@
-package server
+package handler
 
 import "io"
 
-type hostHandler struct {
+type HostHandler struct {
 	host string
 }
 
-func (h hostHandler) do(req string, w io.Writer) bool {
+func NewHostHandler(host string) *HostHandler {
+	return &HostHandler{host: host}
+}
+
+func (h HostHandler) Do(req string, w io.Writer) bool {
 	// CLIENT_HOST
 	// Request to server: 3 + space + LF
 	// Answer: string including host information + space, e.g., localhost:127.0.0.1:

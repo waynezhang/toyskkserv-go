@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"bytes"
@@ -17,20 +17,20 @@ func TestCompletionHandler(t *testing.T) {
 
 	dm := dictionary.NewDictManager(tmp, false)
 	dm.DictionariesDidChange([]string{
-		"../../testdata/jisyo.utf8",
-		"../../testdata/jisyo-2.utf8",
+		"../../../testdata/jisyo.utf8",
+		"../../../testdata/jisyo-2.utf8",
 	})
-	h := completionHandler{dm: dm}
+	h := CompletionHandler{dm: dm}
 
 	w.Reset()
-	assert.True(t, h.do("tai", w))
+	assert.True(t, h.Do("tai", w))
 	assert.Equal(t, "1/taiwan/\n", w.String())
 
 	w.Reset()
-	assert.True(t, h.do("1", w))
+	assert.True(t, h.Do("1", w))
 	assert.Equal(t, "1/1024/1234/1seg/\n", w.String())
 
 	w.Reset()
-	assert.True(t, h.do("tawww", w))
+	assert.True(t, h.Do("tawww", w))
 	assert.Equal(t, "4tawww \n", w.String())
 }

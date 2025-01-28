@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"io"
@@ -6,11 +6,17 @@ import (
 	"github.com/waynezhang/toyskkserv/internal/dictionary"
 )
 
-type candidateHandler struct {
+type CandidateHandler struct {
 	dm *dictionary.DictManager
 }
 
-func (h candidateHandler) do(key string, w io.Writer) bool {
+func NewCandidateHandler(dm *dictionary.DictManager) *CandidateHandler {
+	return &CandidateHandler{
+		dm: dm,
+	}
+}
+
+func (h CandidateHandler) Do(key string, w io.Writer) bool {
 	// CLIENT_REQUEST
 	// Request to server: 1 + dictionary_key + space + LF
 	// Answer if found: 1 + (/ + candidate) * (number of candidates) + / + LF

@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"bytes"
@@ -17,16 +17,24 @@ func TestCandidateHandler(t *testing.T) {
 
 	dm := dictionary.NewDictManager(tmp, false)
 	dm.DictionariesDidChange([]string{
-		"../../testdata/jisyo.utf8",
-		"../../testdata/jisyo-2.utf8",
+		"../../../testdata/jisyo.utf8",
+		"../../../testdata/jisyo-2.utf8",
 	})
-	h := candidateHandler{dm: dm}
+	h := CandidateHandler{dm: dm}
 
 	w.Reset()
-	assert.True(t, h.do("taiwan", w))
+	assert.True(t, h.Do("taiwan", w))
 	assert.Equal(t, "1/台湾/🇹🇼/\n", w.String())
 
 	w.Reset()
-	assert.True(t, h.do("tai", w))
+	assert.True(t, h.Do("tai", w))
 	assert.Equal(t, "4tai \n", w.String())
+}
+
+// helper func
+func prepareTempDir(t *testing.T) string {
+	tmp, err := os.MkdirTemp("", "toyskkserv-test")
+	assert.Nil(t, err)
+
+	return tmp
 }

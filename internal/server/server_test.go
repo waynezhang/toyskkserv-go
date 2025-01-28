@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/waynezhang/toyskkserv/internal/defs"
 	"github.com/waynezhang/toyskkserv/internal/dictionary"
+	"github.com/waynezhang/toyskkserv/internal/server/handler"
 )
 
 func TestNew(t *testing.T) {
@@ -17,6 +18,12 @@ func TestNew(t *testing.T) {
 
 	assert.Equal(t, dm, s.dictManager)
 	assert.Equal(t, "addr", s.listenAddr)
+	assert.IsType(t, &handler.DisconnectHandler{}, s.handlers['0'])
+	assert.IsType(t, &handler.CandidateHandler{}, s.handlers['1'])
+	assert.IsType(t, &handler.VersionHandler{}, s.handlers['2'])
+	assert.IsType(t, &handler.HostHandler{}, s.handlers['3'])
+	assert.IsType(t, &handler.CompletionHandler{}, s.handlers['4'])
+	assert.IsType(t, &handler.CustomProtocolHandler{}, s.handlers['c'])
 }
 
 func TestHandleRequest(t *testing.T) {
