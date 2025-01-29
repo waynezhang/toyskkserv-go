@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+PORT=${2:-1178}
+echo "$1" | iconv -t euc-jp | socat - TCP:localhost:$PORT

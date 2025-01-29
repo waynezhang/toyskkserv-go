@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+PORT=${1:-1179}
+
+export COLOR_NC='\033[0m'
+export COLOR_RED='\033[0;31m'
+export COLOR_GREEN='\033[0;32m'
+
+assert() {
+    local message=$1
+    local expected="$2"
+    local actual="$3"
+
+    if [[ "$expected" == "$actual" ]]; then
+        echo -e "$COLOR_GREEN[PASS]$COLOR_NC $message: '$actual'"
+    else
+        echo -e "$COLOR_RED[FAIL]$COLOR_NC $message: Expected '$expected', Got '$actual'"
+    fi
+}
+
+declare -a cases=()
+
+cases+=("1smile " "1/スマイル/一笑/含み笑い/笑顔/😄/")
+cases+=("1に " "1/二/荷/似/煮/弐;「二」の大字/弍;「二」の異体字/丹/仁;(呉音の一)仁王/児;小児/尼;尼僧/邇;ちか・い/迩;「邇」の異体字/岻;(呉音)/爾;(呉音)/貳;「弍」の旧字/貮;「弍」の旧字/２/2/弍/于/亞/亟/樲/橤/艿/軔/尒/嬭/儞/呢/妮/甤/蕤/桵/荽/緌/咡/毦/洱/栭/檽/鮞/㋥;(に)/")
+cases+=("1+1 " "1/👍/")
+cases+=("1=1+1 " "1/2/2=1+1/＝１＋１/")
+cases+=("3 " "127.0.0.1:$PORT")
+cases+=("4laug " "1/laugh/laughable/laughing/laughter/")
+
+for i in $(seq 0 2 $(( ${#cases[@]} - 1 ))); do
+  req="${cases[$i]}"
+  exp="${cases[$(( $i + 1 ))]}"
+  act=$(./scripts/req "$req" $PORT)
+  assert $req $exp $act
+done
