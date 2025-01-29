@@ -24,10 +24,10 @@ func (h CandidateHandler) Do(key string, w io.Writer) bool {
 	// The dictionary keys and candidates are all variable-length strings
 	// The dictionary keys and candidates have the same character encoding
 	// The primary encoding set of SKK is ASCII + euc-jp (note: UTF-8 can also be used in some implementations)
+
 	respWriter := newCandidateResponseWriter(w, key)
-
 	h.dm.HandleRequest(key, respWriter)
+	respWriter.wrap()
 
-	respWriter.close()
 	return true
 }
