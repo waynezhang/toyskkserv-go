@@ -12,7 +12,7 @@ func TestCandidateRespnseWriter1(t *testing.T) {
 
 	w := newCandidateResponseWriter(buf, "someword")
 	w.Write([]byte("/cdd1/cdd2/"))
-	w.close()
+	w.wrap()
 
 	assert.Equal(t, "1/cdd1/cdd2/\n", buf.String())
 }
@@ -21,7 +21,7 @@ func TestRespnseWriter2(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
 
 	w := newCandidateResponseWriter(buf, "someword")
-	w.close()
+	w.wrap()
 
 	assert.Equal(t, "4someword \n", buf.String())
 }

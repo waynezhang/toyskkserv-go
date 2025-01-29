@@ -20,10 +20,10 @@ func (h CompletionHandler) Do(key string, w io.Writer) bool {
 	// CLIENT_COMPLETION
 	// Request to server: 4 + dictionary_key + space + LF
 	// Same as CLIENT_REQUEST
+
 	respWriter := newCandidateResponseWriter(w, key)
-
 	h.dm.HandleCompletion(key, respWriter)
+	respWriter.wrap()
 
-	respWriter.close()
 	return true
 }
