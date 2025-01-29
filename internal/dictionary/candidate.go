@@ -4,45 +4,61 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/tidwall/btree"
+	"github.com/google/btree"
 )
 
+type pair struct {
+	key string
+	val string
+}
+
 type candidatesManager struct {
-	candidates btree.Map[string, string]
+	candidates *btree.BTreeG[*pair]
 }
 
 func newCandidatesManager() *candidatesManager {
-	return &candidatesManager{}
+	return &candidatesManager{
+		candidates: btree.NewG(32, func(a, b *pair) bool { return a.key < b.key }),
+	}
 }
 
 func (cm *candidatesManager) addCandidates(key string, candidates string) {
-	old, _ := cm.candidates.Get(key)
-	if len(old) == 0 {
-		cm.candidates.Set(key, candidates)
+	p, ok := cm.candidates.Get(&pair{key: key})
+	if ok {
+		p.val = p.val + candidates[1:]
 	} else {
-		cm.candidates.Set(key, old+candidates[1:])
+		p = &pair{
+			key: key,
+			val: candidates,
+		}
 	}
+	cm.candidates.ReplaceOrInsert(p)
 }
 
 func (cm *candidatesManager) findCandidates(key string) string {
 	slog.Info("Find candidates", "key", "["+key+"]")
-	c, _ := cm.candidates.Get(key)
-	return c
+	pair := &pair{
+		key: key,
+	}
+	if p, ok := cm.candidates.Get(pair); ok {
+		return p.val
+	}
+	return ""
 }
 
 func (cm *candidatesManager) iterateCompletions(key string, ite func(c string)) {
 	slog.Info("Find completions", "key", "["+key+"]")
 
-	cm.candidates.Ascend(key, func(k string, v string) bool {
-		if !strings.HasPrefix(k, key) {
+	cm.candidates.AscendGreaterOrEqual(&pair{key: key}, func(p *pair) bool {
+		if !strings.HasPrefix(p.key, key) {
 			return false
 		}
 
-		ite(k)
+		ite(p.key)
 		return true
 	})
 }
 
 func (cm *candidatesManager) clear() {
-	cm.candidates.Clear()
+	cm.candidates.Clear(false)
 }

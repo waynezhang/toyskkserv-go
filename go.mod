@@ -5,13 +5,11 @@ go 1.23.5
 require (
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/go-co-op/gocron/v2 v2.15.0
-	github.com/google/martian/v3 v3.3.3
 	github.com/hashicorp/go-getter v1.7.8
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
-	github.com/tidwall/btree v1.7.0
 	github.com/waynezhang/eucjis2004decode v0.0.0-20250128034756-b522ae1fc4d6
 	golang.org/x/text v0.21.0
 )
@@ -93,6 +91,7 @@ require (
 )
 
 require (
+	github.com/google/btree v1.1.3
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/phsym/console-slog v0.3.1
 	github.com/spf13/pflag v1.0.5 // indirect

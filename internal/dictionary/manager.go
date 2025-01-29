@@ -84,7 +84,7 @@ func (dm *DictManager) DictionariesDidChange(urls []string) {
 }
 
 func (dm *DictManager) reloadDicts(urls []string) {
-	dm.cm.candidates.Clear()
+	dm.cm.clear()
 
 	dm.downloadDictionaries(urls)
 	dm.loadFiles(files.DictionaryPaths(urls, dm.directory))
