@@ -1,4 +1,11 @@
-## Unreleased (2025-01-26)
+## v0.0.4 (2025-01-29)
+
+### Bugs fixed:
+
+- #4 connection lost([`df2f94f`](https://github.com/waynezhang/toyskkserv/commit/df2f94f204029f55575dc77fbb10da07b47f81c5))
+
+
+## v0.0.2 (2025-01-26)
 
 ### Bugs fixed:
 
