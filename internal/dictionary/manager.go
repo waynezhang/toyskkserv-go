@@ -82,10 +82,12 @@ func (dm *DictManager) DictionariesDidChange(urls []string) {
 }
 
 func (dm *DictManager) reloadDicts(urls []string) {
-	dm.cm.Clear()
-
 	dm.downloadDictionaries(urls)
-	dm.loadFiles(files.DictionaryPaths(urls, dm.directory))
+
+	dm.cm.Transaction(func(m *candidate.Manager) {
+		m.Clear()
+		dm.loadFiles(files.DictionaryPaths(urls, dm.directory))
+	})
 }
 
 func (dm *DictManager) downloadDictionaries(urls []string) {

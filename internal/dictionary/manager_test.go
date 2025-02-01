@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/waynezhang/toyskkserv/internal/dictionary/candidate"
 	"github.com/waynezhang/toyskkserv/internal/files"
 )
 
@@ -48,7 +49,9 @@ func TestHandleRequest(t *testing.T) {
 	assert.Equal(t, "", handleRequestBridge("", dm))
 	assert.Equal(t, "", handleRequestBridge("abc", dm))
 
-	dm.cm.Add("abc", "/test1/test2/test3/")
+	dm.cm.Transaction(func(m *candidate.Manager) {
+		dm.cm.Add("abc", "/test1/test2/test3/")
+	})
 	assert.Equal(t, "/test1/test2/test3/", handleRequestBridge("abc", dm))
 
 	dm.fallbackToGoogle = true
@@ -69,10 +72,16 @@ func TestHandleCompletion(t *testing.T) {
 	assert.Equal(t, "", handleCompletionBridge(" ", dm))
 	assert.Equal(t, "", handleCompletionBridge("abc", dm))
 
-	dm.cm.Add("abc", "/test1/test2/test3/")
+	dm.cm.Transaction(func(m *candidate.Manager) {
+		dm.cm.Add("abc", "/test1/test2/test3/")
+	})
+
 	assert.Equal(t, "/abc/", handleCompletionBridge("ab", dm))
 
-	dm.cm.Add("abd", "/test1/test2/test3/")
+	dm.cm.Transaction(func(m *candidate.Manager) {
+		dm.cm.Add("abd", "/test1/test2/test3/")
+	})
+
 	assert.Equal(t, "/abc/abd/", handleCompletionBridge("ab", dm))
 }
 
@@ -144,9 +153,12 @@ func TestLoadDictionaries(t *testing.T) {
 		FallbackToGoogle: false,
 		UseDiskCache:     false,
 	})
-	dm.loadFiles([]string{
-		"../../testdata/jisyo.utf8",
-		"../../testdata/jisyo.euc-jp",
+
+	dm.cm.Transaction(func(m *candidate.Manager) {
+		dm.loadFiles([]string{
+			"../../testdata/jisyo.utf8",
+			"../../testdata/jisyo.euc-jp",
+		})
 	})
 
 	cases := [][]string{
