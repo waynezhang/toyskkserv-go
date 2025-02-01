@@ -2,6 +2,8 @@ package offheapcache
 
 import (
 	"log/slog"
+	"os"
+	"path/filepath"
 
 	"github.com/edsrzf/mmap-go"
 )
@@ -25,15 +27,14 @@ type Cache struct {
 	offset int32
 }
 
-func New(path string, size int) *Cache {
+func New(size int) *Cache {
 	if size == 0 {
 		size = tmpFileSize
 	}
-	slog.Info("File cache", "path", path, "size", size)
 
-	buf, err := mmap.MapRegion(nil, size, mmap.RDWR, mmap.ANON, 0)
-	if err != nil {
-		panic(err)
+	buf := openTempFile(size)
+	if buf == nil {
+		return nil
 	}
 
 	c := &Cache{
@@ -43,6 +44,36 @@ func New(path string, size int) *Cache {
 	c.Clear()
 
 	return c
+}
+
+func openTempFile(size int) []byte {
+	path := os.Getenv("TOYSKKSERV_CACHE")
+	if path == "" {
+		path = filepath.Join(os.TempDir(), "toyskkserv.cache")
+	}
+
+	f, err := os.Create(path)
+	if err != nil {
+		slog.Error("Failed to open temporary file", "err", err)
+		return nil
+	}
+	slog.Info("File cache", "path", path, "size", size)
+
+	_, err = f.WriteAt([]byte{0}, int64(size-1))
+	if err != nil {
+		slog.Error("Failed to write temporary file", "err", err)
+		f.Close()
+		return nil
+	}
+
+	buf, err := mmap.Map(f, mmap.RDWR, 0)
+	if err != nil {
+		slog.Error("Failed to map file to memory", "err", err)
+		f.Close()
+		return nil
+	}
+
+	return []byte(buf)
 }
 
 func (c *Cache) NewNode(key, val []byte) (node, int32) {

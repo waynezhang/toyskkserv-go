@@ -12,14 +12,18 @@ type Manager struct {
 
 func New(onDisk bool) *Manager {
 	slog.Info("Creating candidates manager", "OnDisk", onDisk)
+
 	if onDisk {
-		return &Manager{
-			tree: btree.NewOffheapBtree(),
+		t := btree.NewOffheapBtree()
+		if t != nil {
+			return &Manager{
+				tree: t,
+			}
 		}
-	} else {
-		return &Manager{
-			tree: btree.NewInMemTree(),
-		}
+		slog.Warn("Fallback to memory cache")
+	}
+	return &Manager{
+		tree: btree.NewInMemTree(),
 	}
 }
 
