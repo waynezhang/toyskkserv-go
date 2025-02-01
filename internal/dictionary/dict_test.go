@@ -11,8 +11,11 @@ import (
 
 func TestLoadDict(t *testing.T) {
 	m := candidate.New(false)
-	loadFile("../../testdata/jisyo.utf8", m)
-	loadFile("../../testdata/jisyo.euc-jp", m)
+
+	m.Transaction(func(m *candidate.Manager) {
+		loadFile("../../testdata/jisyo.utf8", m)
+		loadFile("../../testdata/jisyo.euc-jp", m)
+	})
 	assert.Equal(t, "/̀;accent grave (diacritic)/", m.Find("`")) // first line
 	assert.Equal(t, "/キロ/", m.Find("1024"))
 	assert.Equal(t, "/ā;a-/å;a^/ä;a:/ã;a~/â;a^/á;a'/à;a`/ă;av/ą;a,/ⓐ;(a)/ª;西語女性序数/ɐ;[IPA]/ʌ;[IPA]/ɑ;[IPA]/ɒ;[IPA]/", m.Find("a"))
@@ -20,7 +23,10 @@ func TestLoadDict(t *testing.T) {
 
 func TestLoadInvalidDict(t *testing.T) {
 	m := candidate.New(false)
-	loadFile("../../testdata/jisyo.utf8.notexisting", m)
+
+	m.Transaction(func(m *candidate.Manager) {
+		loadFile("../../testdata/jisyo.utf8.notexisting", m)
+	})
 	assert.Equal(t, "", m.Find("1024"))
 }
 

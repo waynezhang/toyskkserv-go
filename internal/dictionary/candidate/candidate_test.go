@@ -19,18 +19,30 @@ func TestCandidates(t *testing.T) {
 
 		assert.Equal(t, "", m.Find("abc"))
 
-		m.Add("abc", "/val1/")
+		m.Transaction(func(m *Manager) {
+			m.Add("abc", "/val1/")
+		})
+
 		assert.Equal(t, "/val1/", m.Find("abc"))
 
-		m.Add("abc", "/val2/val3/val4/")
+		m.Transaction(func(m *Manager) {
+			m.Add("abc", "/val2/val3/val4/")
+		})
+
 		assert.Equal(t, "/val1/val2/val3/val4/", m.Find("abc"))
 
-		m.Add("ABC", "/val3/")
-		m.Add("ABC", "/val4/")
+		m.Transaction(func(m *Manager) {
+			m.Add("ABC", "/val3/")
+			m.Add("ABC", "/val4/")
+		})
+
 		assert.Equal(t, "/val1/val2/val3/val4/", m.Find("abc"))
 		assert.Equal(t, "/val3/val4/", m.Find("ABC"))
 
-		m.Clear()
+		m.Transaction(func(m *Manager) {
+			m.Clear()
+		})
+
 		assert.Equal(t, "", m.Find("abc"))
 		assert.Equal(t, "", m.Find("ABC"))
 	}
@@ -41,12 +53,14 @@ func TestCompletions(t *testing.T) {
 	for _, c := range cases {
 		m := New(c)
 
-		m.Add("abc", "/val1/")
-		m.Add("abc", "/val2/")
-		m.Add("ABC", "/val3/")
-		m.Add("ABC", "/val4/")
-		m.Add("abd", "/val3/")
-		m.Add("abd", "/val4/")
+		m.Transaction(func(m *Manager) {
+			m.Add("abc", "/val1/")
+			m.Add("abc", "/val2/")
+			m.Add("ABC", "/val3/")
+			m.Add("ABC", "/val4/")
+			m.Add("abd", "/val3/")
+			m.Add("abd", "/val4/")
+		})
 
 		cases := [][]string{
 			{"a", "/abc/abd/"},
