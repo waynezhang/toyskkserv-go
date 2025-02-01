@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/waynezhang/toyskkserv/internal/cmd"
+	"github.com/waynezhang/toyskkserv/cmd"
 )
 
 func main() {
