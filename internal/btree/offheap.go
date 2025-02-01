@@ -2,6 +2,7 @@ package btree
 
 import (
 	"bytes"
+	"log/slog"
 	"strings"
 	"sync"
 
@@ -61,6 +62,10 @@ func (t *OffheapBTree) Append(key, existingVal, val string) {
 
 	if existingVal == "" {
 		_, addr := t.cache.NewNode([]byte(key), []byte(val))
+		if addr < 0 {
+			slog.Error("Cache limit exceeded")
+			return
+		}
 		t.t.ReplaceOrInsert(addr)
 		return
 	}
@@ -72,6 +77,11 @@ func (t *OffheapBTree) Append(key, existingVal, val string) {
 	}
 
 	_, newAddr := t.cache.NewNode([]byte(key), []byte(val))
+	if newAddr < 0 {
+		slog.Error("Cache limit exceeded")
+		return
+	}
+
 	addr := p
 	for {
 		n := t.cache.FindNode(addr)
@@ -88,6 +98,10 @@ func (t *OffheapBTree) Append(key, existingVal, val string) {
 func (t *OffheapBTree) IterateKey(prefix string, fn func(key string)) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+
+	if len(prefix) == 0 {
+		return
+	}
 
 	resvAddr := t.cache.ReservedNode([]byte(prefix))
 	t.t.AscendGreaterOrEqual(resvAddr, func(p int32) bool {
