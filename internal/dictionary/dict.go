@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/waynezhang/eucjis2004decode/eucjis2004"
+	"github.com/waynezhang/toyskkserv/internal/dictionary/candidate"
 	"golang.org/x/text/transform"
 )
 
@@ -19,7 +20,7 @@ const (
 	ENCODING_EUCJP     = "euc-jp"
 )
 
-func loadFile(path string, cm *candidatesManager) {
+func loadFile(path string, cm *candidate.Manager) {
 	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		slog.Error("Failed to open file", "file", path, "err", err)
@@ -86,7 +87,7 @@ func detectFileEncoding(f *os.File) (string, error) {
 	}
 }
 
-func parseLine(bs []byte, cm *candidatesManager) {
+func parseLine(bs []byte, cm *candidate.Manager) {
 	if bytes.HasPrefix(bs, []byte{';', ';'}) {
 		return
 	}
@@ -94,5 +95,5 @@ func parseLine(bs []byte, cm *candidatesManager) {
 	keyEnd := bytes.IndexByte(bs, ' ')
 	key := string(bs[:keyEnd])
 	candidates := string(bs[keyEnd+1:]) // /val1/
-	cm.addCandidates(key, candidates)
+	cm.Add(key, candidates)
 }

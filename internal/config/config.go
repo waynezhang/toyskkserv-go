@@ -13,8 +13,9 @@ type Config struct {
 	Dictionaries            []string
 	DictionaryDirectory     string
 	ListenAddr              string
-	FallbackToGoogle        bool
 	UpdateSchedule          string
+	FallbackToGoogle        bool
+	UseDiskCache            bool
 	onConfigChangeCallbacks []func()
 }
 

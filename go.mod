@@ -91,6 +91,7 @@ require (
 )
 
 require (
+	github.com/edsrzf/mmap-go v1.2.0
 	github.com/google/btree v1.1.3
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/phsym/console-slog v0.3.1

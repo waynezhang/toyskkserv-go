@@ -23,7 +23,13 @@ var serveCmd = &cobra.Command{
 		})
 
 		scheduler.StartUpdateWatcher(cfg)
-		dm := dictionary.Shared()
+
+		dm := dictionary.NewDictManager(dictionary.Config{
+			Dictionaires:     cfg.Dictionaries,
+			Directory:        cfg.DictionaryDirectory,
+			FallbackToGoogle: cfg.FallbackToGoogle,
+			UseDiskCache:     cfg.UseDiskCache,
+		})
 
 		server.
 			New(cfg.ListenAddr, dm).

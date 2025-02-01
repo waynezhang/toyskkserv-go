@@ -13,7 +13,14 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	dm := dictionary.NewDictManager("tmp", false)
+	tmp := prepareTempDir(t)
+	defer os.RemoveAll(tmp)
+
+	dm := dictionary.NewDictManager(dictionary.Config{
+		Directory:        tmp,
+		FallbackToGoogle: false,
+		UseDiskCache:     false,
+	})
 	s := New("addr", dm)
 
 	assert.Equal(t, dm, s.dictManager)
@@ -30,7 +37,11 @@ func TestHandleRequest(t *testing.T) {
 	tmp := prepareTempDir(t)
 	defer os.RemoveAll(tmp)
 
-	dm := dictionary.NewDictManager(tmp, false)
+	dm := dictionary.NewDictManager(dictionary.Config{
+		Directory:        tmp,
+		FallbackToGoogle: false,
+		UseDiskCache:     false,
+	})
 	dm.DictionariesDidChange([]string{
 		"https://github.com/uasi/skk-emoji-jisyo/raw/refs/heads/master/SKK-JISYO.emoji.utf8",
 	})
