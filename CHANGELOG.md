@@ -1,8 +1,46 @@
-## v0.0.4 (2025-01-29)
+## v0.0.5 (2025-02-01)
 
-### Bugs fixed:
+### New feature
 
-- #4 connection lost([`df2f94f`](https://github.com/waynezhang/toyskkserv/commit/df2f94f204029f55575dc77fbb10da07b47f81c5))
+- add reload command (`[d96bb6a](https://github.com/waynezhang/toyskkserv/commit/d96bb6ae9dc6ff72bdab056560129a116cd85e9a)`)
+- off heap cache to surpress memory usage (`[8574794](https://github.com/waynezhang/toyskkserv/commit/85747944ecfd2803f88519d16e95b24fb72da4b5)`)
+- use mapped memory as cache (`[25c7f7f](https://github.com/waynezhang/toyskkserv/commit/25c7f7f8bdb84f7d8eb167351cbcbea745ba8433)`)
+
+### Fix
+
+- crash when multiple reload command received (`[77d4c45](https://github.com/waynezhang/toyskkserv/commit/77d4c4576271baa0a5bebe8ea9b541ce4159cfb8)`)
+
+### Refactor
+
+- move cmd to root directory (`[f5363a8](https://github.com/waynezhang/toyskkserv/commit/f5363a884ccce44ff72b6a66dbec9fa2993554c8)`)
+
+
+
+## v0.0.4 (2025-02-01)
+
+### Fix
+
+- [#4](https://github.com/waynezhang/toyskkserv/issues/4) connection lost (`[df2f94f](https://github.com/waynezhang/toyskkserv/commit/df2f94f204029f55575dc77fbb10da07b47f81c5)`)
+
+### Refactor
+
+- make handler more flexible (`[a0ae141](https://github.com/waynezhang/toyskkserv/commit/a0ae14103d1eb5e37eae298111eed81a61e6eddb)`)
+- migrate to decoder (`[60db917](https://github.com/waynezhang/toyskkserv/commit/60db9171e7d5fd7b7d7b5330e23e3d98659e96ab)`)
+- migrate to google btree (`[ef96e94](https://github.com/waynezhang/toyskkserv/commit/ef96e94f0221e27860397a8f090b865c8ea7a339)`)
+- requeest handlers (`[e895f8f](https://github.com/waynezhang/toyskkserv/commit/e895f8fe326ea7f8a902d76508157073e1405f9d)`)
+- write response to connection directly to surpress memory usage (`[4d998bd](https://github.com/waynezhang/toyskkserv/commit/4d998bd43c2fdfb4af929d67ea3de8fe5423631d)`)
+
+
+
+## v0.0.3 (2025-02-01)
+
+### Refactor
+
+- make handler more flexible (`[a0ae141](https://github.com/waynezhang/toyskkserv/commit/a0ae14103d1eb5e37eae298111eed81a61e6eddb)`)
+- migrate to decoder (`[60db917](https://github.com/waynezhang/toyskkserv/commit/60db9171e7d5fd7b7d7b5330e23e3d98659e96ab)`)
+- requeest handlers (`[e895f8f](https://github.com/waynezhang/toyskkserv/commit/e895f8fe326ea7f8a902d76508157073e1405f9d)`)
+- write response to connection directly to surpress memory usage (`[4d998bd](https://github.com/waynezhang/toyskkserv/commit/4d998bd43c2fdfb4af929d67ea3de8fe5423631d)`)
+
 
 
 ## v0.0.2 (2025-01-26)
@@ -34,5 +72,3 @@
 - expand tilde([`95b2a71`](https://github.com/waynezhang/tskks/commit/95b2a71fd01a9ef580969072df4a2a68997b6312))
 - ci on linux([`340a00c`](https://github.com/waynezhang/tskks/commit/340a00cd1ebfee42334852844b132bb17f0fcb73))
 - server crash and respond to 0 correctly([`536e320`](https://github.com/waynezhang/tskks/commit/536e3206d5ed3ff7d3145af9a9e15926c81697e4))
-
-
