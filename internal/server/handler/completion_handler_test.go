@@ -15,7 +15,11 @@ func TestCompletionHandler(t *testing.T) {
 
 	w := bytes.NewBuffer(nil)
 
-	dm := dictionary.NewDictManager(tmp, false)
+	dm := dictionary.NewDictManager(dictionary.Config{
+		Directory:        tmp,
+		FallbackToGoogle: false,
+		UseDiskCache:     false,
+	})
 	dm.DictionariesDidChange([]string{
 		"../../../testdata/jisyo.utf8",
 		"../../../testdata/jisyo-2.utf8",

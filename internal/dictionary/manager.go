@@ -6,13 +6,13 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/waynezhang/toyskkserv/internal/config"
+	"github.com/waynezhang/toyskkserv/internal/dictionary/candidate"
 	"github.com/waynezhang/toyskkserv/internal/files"
 	"github.com/waynezhang/toyskkserv/internal/googleapi"
 )
 
 type DictManager struct {
-	cm               *candidatesManager
+	cm               *candidate.Manager
 	directory        string
 	fallbackToGoogle bool
 }
@@ -22,31 +22,29 @@ var (
 	once     sync.Once
 )
 
-func Shared() *DictManager {
-	once.Do(func() {
-		cfg := config.Shared()
-
-		dm := NewDictManager(cfg.DictionaryDirectory, cfg.FallbackToGoogle)
-		dm.reloadDicts(cfg.Dictionaries)
-
-		instance = dm
-	})
-	return instance
+type Config struct {
+	Dictionaires     []string
+	Directory        string
+	FallbackToGoogle bool
+	UseDiskCache     bool
 }
 
-func NewDictManager(directory string, fallbackToGoogle bool) *DictManager {
-	return &DictManager{
-		cm:               newCandidatesManager(),
-		directory:        directory,
-		fallbackToGoogle: fallbackToGoogle,
+func NewDictManager(cfg Config) *DictManager {
+	dm := &DictManager{
+		cm:               candidate.New(cfg.UseDiskCache),
+		directory:        cfg.Directory,
+		fallbackToGoogle: cfg.FallbackToGoogle,
 	}
+	dm.reloadDicts(cfg.Dictionaires)
+
+	return dm
 }
 
 func (dm *DictManager) HandleRequest(key string, w io.Writer) {
 	slog.Info("Start finding candidates")
 	defer slog.Info("Finished finding candidates")
 
-	candidates := dm.cm.findCandidates(key)
+	candidates := dm.cm.Find(key)
 
 	if len(candidates) > 0 {
 		w.Write([]byte(candidates))
@@ -68,7 +66,7 @@ func (dm *DictManager) HandleCompletion(key string, w io.Writer) {
 	defer slog.Info("Finished finding completions")
 
 	found := false
-	dm.cm.iterateCompletions(key, func(c string) {
+	dm.cm.IterateKey(key, func(c string) {
 		found = true
 		w.Write([]byte{'/'})
 		w.Write([]byte([]byte(c)))
@@ -84,14 +82,14 @@ func (dm *DictManager) DictionariesDidChange(urls []string) {
 }
 
 func (dm *DictManager) reloadDicts(urls []string) {
-	dm.cm.clear()
+	dm.cm.Clear()
 
 	dm.downloadDictionaries(urls)
 	dm.loadFiles(files.DictionaryPaths(urls, dm.directory))
 }
 
 func (dm *DictManager) downloadDictionaries(urls []string) {
-	slog.Info("Start loading dictionaries")
+	slog.Info("Start downloading dictionaries")
 
 	for _, url := range urls {
 		if files.IsLocalURL(url) {
@@ -107,11 +105,15 @@ func (dm *DictManager) downloadDictionaries(urls []string) {
 		files.Download(url, path)
 	}
 
-	slog.Info("All dictionaries loaded")
+	slog.Info("All dictionaries downloaded")
 }
 
 func (dm *DictManager) loadFiles(paths []string) {
+	slog.Info("Start loading dictionaries")
+
 	for _, path := range paths {
 		loadFile(path, dm.cm)
 	}
+
+	slog.Info("All dictionaries loaded", "entries", dm.cm.Count())
 }

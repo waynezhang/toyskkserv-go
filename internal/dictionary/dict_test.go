@@ -6,21 +6,22 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/waynezhang/toyskkserv/internal/dictionary/candidate"
 )
 
 func TestLoadDict(t *testing.T) {
-	cm := newCandidatesManager()
-	loadFile("../../testdata/jisyo.utf8", cm)
-	loadFile("../../testdata/jisyo.euc-jp", cm)
-	assert.Equal(t, "/̀;accent grave (diacritic)/", cm.findCandidates("`")) // first line
-	assert.Equal(t, "/キロ/", cm.findCandidates("1024"))
-	assert.Equal(t, "/ā;a-/å;a^/ä;a:/ã;a~/â;a^/á;a'/à;a`/ă;av/ą;a,/ⓐ;(a)/ª;西語女性序数/ɐ;[IPA]/ʌ;[IPA]/ɑ;[IPA]/ɒ;[IPA]/", cm.findCandidates("a"))
+	m := candidate.New(false)
+	loadFile("../../testdata/jisyo.utf8", m)
+	loadFile("../../testdata/jisyo.euc-jp", m)
+	assert.Equal(t, "/̀;accent grave (diacritic)/", m.Find("`")) // first line
+	assert.Equal(t, "/キロ/", m.Find("1024"))
+	assert.Equal(t, "/ā;a-/å;a^/ä;a:/ã;a~/â;a^/á;a'/à;a`/ă;av/ą;a,/ⓐ;(a)/ª;西語女性序数/ɐ;[IPA]/ʌ;[IPA]/ɑ;[IPA]/ɒ;[IPA]/", m.Find("a"))
 }
 
 func TestLoadInvalidDict(t *testing.T) {
-	cm := newCandidatesManager()
-	loadFile("../../testdata/jisyo.utf8.notexisting", cm)
-	assert.Equal(t, "", cm.findCandidates("1024"))
+	m := candidate.New(false)
+	loadFile("../../testdata/jisyo.utf8.notexisting", m)
+	assert.Equal(t, "", m.Find("1024"))
 }
 
 func TestDetectEncoding(t *testing.T) {
