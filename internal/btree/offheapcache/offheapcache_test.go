@@ -2,7 +2,6 @@ package offheapcache
 
 import (
 	"bytes"
-	"os"
 	"strconv"
 	"testing"
 
@@ -10,10 +9,7 @@ import (
 )
 
 func TestOffheapCache(t *testing.T) {
-	tmp := prepareTempDir(t)
-	defer os.RemoveAll(tmp)
-
-	c := New(tmp, 1024*1024)
+	c := New(1024 * 1024)
 
 	n := c.ReservedNode([]byte("a test"))
 	assert.Equal(t, int32(0), n)
@@ -50,9 +46,6 @@ func TestOffheapCache(t *testing.T) {
 }
 
 func TestOffheapCacheFilling(t *testing.T) {
-	tmp := prepareTempDir(t)
-	defer os.RemoveAll(tmp)
-
 	keyOf := func(i int) []byte {
 		return bytes.Repeat([]byte{'a' + byte(i%26)}, i*100)
 	}
@@ -60,7 +53,7 @@ func TestOffheapCacheFilling(t *testing.T) {
 		return bytes.Repeat([]byte{'A' + byte(i%26)}, i*200)
 	}
 
-	c := New(tmp, 1024*1024*100)
+	c := New(1024 * 1024 * 100)
 	offset := int32(reservedSpace + 16)
 	assert.Equal(t, offset, c.offset)
 
@@ -100,12 +93,4 @@ func TestOffheapCacheFilling(t *testing.T) {
 
 	c.Clear()
 	assert.Equal(t, int32(reservedSpace+16), c.offset)
-}
-
-// helper func
-func prepareTempDir(t *testing.T) string {
-	tmp, err := os.MkdirTemp("", "toyskkserv-test")
-	assert.Nil(t, err)
-
-	return tmp
 }

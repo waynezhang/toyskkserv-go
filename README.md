@@ -49,6 +49,7 @@ Copy [the sample file](https://github.com/waynezhang/toyskkserv/blob/main/toyskk
 
 - `help`: Show all commands
 - `version`: Show the version
+- `reload`: Reload all dictionaries
 - `update`: Update dictionaries manually
 - `serve`: Start the server
 
@@ -102,6 +103,10 @@ Since there are no word segment for the original request `ここではきもの�
 ```
 
 toyskkserv returns `/ここでは/個々では/此処では/ココでは/ココデは/` as response to SKK client.
+
+### Use disk cache
+
+`UseDiskCache`: Use memory mapped file as cache to suppress memory usage. Temp file is located in `$TMPDIR`. Use `TOYSKKSERV_CACHE` to override the file path.
 
 ### Scheduled dictionary update (experimentally)
 

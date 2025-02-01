@@ -16,7 +16,11 @@ type OffheapBTree struct {
 }
 
 func NewOffheapBtree() *OffheapBTree {
-	cache := offheapcache.New("", 0)
+	cache := offheapcache.New(0)
+	if cache == nil {
+		return nil
+	}
+
 	return &OffheapBTree{
 		t: btree.NewG(32, func(a, b int32) bool {
 			akey, _ := cache.Bytes(a)
