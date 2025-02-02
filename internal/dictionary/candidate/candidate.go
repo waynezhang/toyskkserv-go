@@ -66,10 +66,6 @@ func (m *Manager) IterateKey(key string, ite func(c string)) {
 }
 
 func (m *Manager) Count() int {
-	if m.updating {
-		return 0
-	}
-
 	return m.tree.Count()
 }
 
