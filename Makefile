@@ -9,7 +9,10 @@ LDFLAGS=-ldflags "-X github.com/waynezhang/toyskkserv/internal/defs.Version=${VE
 all: build
 
 build:
-	@go build ${LDFLAGS} -o ${OUTPUT_PATH}/${BINARY} main.go
+	@CGO_ENABLED=0 go build ${LDFLAGS} -ldflags "-w -s" -o ${OUTPUT_PATH}/${BINARY} main.go
+
+dev:
+	@CGO_ENABLED=0 go build ${LDFLAGS} -o tmp/main main.go
 
 test:
 	@go test ./...

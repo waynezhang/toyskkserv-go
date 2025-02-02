@@ -3,8 +3,8 @@ testdata_dir = "testdata"
 
 [build]
   args_bin = []
-  bin = "/usr/bin/env true;TOYSKKSERV_CACHE=./tmp/tmp-cache ./bin/toyskkserv -v serve"
-  cmd = "make"
+  bin = "/usr/bin/env true;TOYSKKSERV_CACHE=./tmp/tmp-cache ./tmp/main -v serve"
+  cmd = "make dev"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
