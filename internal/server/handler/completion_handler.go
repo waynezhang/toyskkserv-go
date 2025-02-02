@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/waynezhang/toyskkserv/internal/dictionary"
+	responsewriter "github.com/waynezhang/toyskkserv/internal/server/handler/response_writer"
 )
 
 type CompletionHandler struct {
@@ -21,9 +22,9 @@ func (h CompletionHandler) Do(key string, w io.Writer) bool {
 	// Request to server: 4 + dictionary_key + space + LF
 	// Same as CLIENT_REQUEST
 
-	respWriter := newCandidateResponseWriter(w, key)
+	respWriter := responsewriter.New(w, key)
 	h.dm.HandleCompletion(key, respWriter)
-	respWriter.wrap()
+	respWriter.Wrap()
 
 	return true
 }

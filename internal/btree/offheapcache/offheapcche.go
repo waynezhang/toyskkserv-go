@@ -77,6 +77,10 @@ func openTempFile(size int) []byte {
 }
 
 func (c *Cache) NewNode(key, val []byte) (node, int32) {
+	if int(c.offset+nodeSize)+len(key)+len(val) >= len(c.buf) {
+		return node{}, -1
+	}
+
 	addr := c.offset
 
 	n := node{

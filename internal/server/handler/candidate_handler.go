@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/waynezhang/toyskkserv/internal/dictionary"
+	responsewriter "github.com/waynezhang/toyskkserv/internal/server/handler/response_writer"
 )
 
 type CandidateHandler struct {
@@ -25,9 +26,9 @@ func (h CandidateHandler) Do(key string, w io.Writer) bool {
 	// The dictionary keys and candidates have the same character encoding
 	// The primary encoding set of SKK is ASCII + euc-jp (note: UTF-8 can also be used in some implementations)
 
-	respWriter := newCandidateResponseWriter(w, key)
+	respWriter := responsewriter.New(w, key)
 	h.dm.HandleRequest(key, respWriter)
-	respWriter.wrap()
+	respWriter.Wrap()
 
 	return true
 }
