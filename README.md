@@ -1,5 +1,7 @@
 # toyskkserv
 
+**Deprecated, check [toyskkserv](https://github.com/waynezhang/toyskkserv) instead.**
+
 A toy SKK skkserv. Just made this for fun.
 
 ## Features
